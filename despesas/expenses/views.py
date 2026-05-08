@@ -192,41 +192,40 @@ def configuracoes(request):
         return redirect("configuracoes")
 
     # ADICIONAR
-    if request.method == "POST" and "email" in request.POST:
+    if request.method == "POST" and "identificador" in request.POST:
 
         form = CompartilharForm(request.POST)
 
         if form.is_valid():
 
-            email = form.cleaned_data["email"]
+            identificador = form.cleaned_data["identificador"]
 
-            try:
+            user = User.objects.filter(
+                Q(email=identificador) | Q(username=identificador)
+            ).first()
 
-                user = User.objects.get(email=email)
+            if not user:
 
-                if user == request.user:
+                form.add_error("identificador", "Utilizador não encontrado.")
 
-                    form.add_error("email", "Não pode partilhar consigo mesmo.")
+            elif user == request.user:
 
-                elif partilha_existente:
+                form.add_error("identificador", "Não pode partilhar consigo mesmo.")
 
-                    form.add_error("email", "Já existe uma partilha configurada.")
+            elif partilha_existente:
 
-                else:
+                form.add_error("identificador", "Já existe uma partilha configurada.")
 
-                    Compartilhamento.objects.create(
-                        owner=request.user,
-                        shared_user=user,
-                    )
+            else:
 
-                    messages.success(request, "Partilha criada com sucesso.")
+                Compartilhamento.objects.create(
+                    owner=request.user,
+                    shared_user=user,
+                )
 
-                    return redirect("configuracoes")
+                messages.success(request, "Partilha criada com sucesso.")
 
-            except User.DoesNotExist:
-
-                form.add_error("email", "Utilizador não encontrado.")
-
+                return redirect("configuracoes")
     return render(
         request,
         "configuracoes.html",

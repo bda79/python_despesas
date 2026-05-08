@@ -380,8 +380,14 @@
             </div>
             <div style="margin-bottom:20px; display:flex; gap:10px;">
                 {% if tem_partilha %}
-                    <a href="{% url 'lista' %}" class="btn btn-secondary">Minhas despesas</a>
-                    <a href="{% url 'lista' %}?shared=1" class="btn btn-primary">Ver em conjunto</a>
+                    <a href="{% url 'lista' %}"
+                       class="btn {% if not ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
+                        Minhas despesas
+                    </a>
+                    <a href="{% url 'lista' %}?shared=1"
+                       class="btn {% if ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
+                        Ver em conjunto
+                    </a>
                 {% endif %}
             </div>
             {% if despesas %}

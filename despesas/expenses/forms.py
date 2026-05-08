@@ -115,12 +115,13 @@ class RegisterForm(UserCreationForm):
 
 
 class CompartilharForm(forms.Form):
-    email = forms.EmailField(
-        label="Email",
-        widget=forms.EmailInput(
+
+    identificador = forms.CharField(
+        label="Email ou Username",
+        widget=forms.TextInput(
             attrs={
                 "class": "form-control",
-                "placeholder": "Digite o email do utilizador ou username para partilhar",
+                "placeholder": "Digite email ou username",
             }
         ),
     )

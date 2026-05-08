@@ -77,8 +77,8 @@
                         {% csrf_token %}
                         <div class="form-group">
                             <label>Email do utilizador</label>
-                            {{ form.email }}
-                            {% if form.email.errors %}<div class="form-errors">{{ form.email.errors }}</div>{% endif %}
+                            {{ form.identificador }}
+                            {% if form.identificador.errors %}<div class="form-errors">{{ form.identificador.errors }}</div>{% endif %}
                         </div>
                         <br>
                         <button class="btn btn-primary">Partilhar</button>
