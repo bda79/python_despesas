@@ -411,6 +411,7 @@
                                     <th>Categoria</th>
                                     <th class="valor-col">Valor (€)</th>
                                     <th>Descrição</th>
+                                    <th>Criado por</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
@@ -423,6 +424,7 @@
                                         </td>
                                         <td class="valor-col">{{ d.valor|format_currency_pt }}</td>
                                         <td class="descricao-col">{{ d.descricao|truncatechars:80 }}</td>
+                                        <td>{{ d.user.username }}</td>
                                         <td>
                                             <div class="action-buttons">
                                                 <a href="{% url 'editar' d.id %}" class="btn btn-warning btn-sm">Editar</a>

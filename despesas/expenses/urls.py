@@ -45,6 +45,7 @@ urlpatterns = [
     path("editar/<int:id>/", views.editar_despesa, name="editar"),
     path("apagar/<int:id>/", views.apagar_despesa, name="apagar"),
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("configuracoes/", views.configuracoes, name="configuracoes"),
     # SESSION
     path("keep_alive/", views.keep_alive, name="keep_alive"),
 ]

@@ -455,6 +455,11 @@
                                    class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                                     <i class="fas fa-chart-pie"></i> Dashboard
                                 </a>
+                                <a href="{% url 'configuracoes' %}"
+                                   title="Configurações"
+                                   class="{% if request.resolver_match.url_name == 'configuracoes' %}active{% endif %}">
+                                    <i class="fas fa-cog"></i> Configurações
+                                </a>
                             </div>
                             <div class="navbar-nav-right">
                                 <span class="navbar-user">

@@ -35,4 +35,22 @@ class Despesa(models.Model):
         return f"{self.valor}€ - {self.categoria}"
 
 
+class Compartilhamento(models.Model):
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="shared_with"
+    )
+
+    shared_user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="can_view_from"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("owner", "shared_user")
+
+    def __str__(self):
+        return f"{self.shared_user} pode ver despesas de {self.owner}"
+
+
 # Create your models here.

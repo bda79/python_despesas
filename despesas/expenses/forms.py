@@ -112,3 +112,15 @@ class RegisterForm(UserCreationForm):
             "password1",
             "password2",
         )
+
+
+class CompartilharForm(forms.Form):
+    username = forms.CharField(label="Utilizador")
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+
+        try:
+            return User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise forms.ValidationError("Utilizador não encontrado")

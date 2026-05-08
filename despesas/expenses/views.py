@@ -2,12 +2,13 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from django.db.models import Sum, FloatField
+from django.db.models import Sum, FloatField, Q
 from django.db.models.functions import Cast
-from .forms import DespesaForm, RegisterForm
-from .models import Despesa, Categoria
+from .forms import DespesaForm, RegisterForm, CompartilharForm
+from .models import Despesa, Categoria, Compartilhamento
 
 
 def login_view(request):
@@ -68,7 +69,13 @@ def register_view(request):
 
 @login_required
 def lista_despesas(request):
-    despesas = Despesa.objects.filter(user=request.user)
+
+    users_permitidos = User.objects.filter(
+        Q(id=request.user.id) | Q(shared_with__shared_user=request.user)
+    ).distinct()
+
+    despesas = Despesa.objects.filter(user__in=users_permitidos).order_by("-data")
+
     total = sum(d.valor for d in despesas)
 
     return render(request, "lista.html", {"despesas": despesas, "total": total})
@@ -142,6 +149,37 @@ def dashboard(request):
 
     return render(
         request, "dashboard.html", {"total": total, "por_categoria": por_categoria}
+    )
+
+
+@login_required
+def configuracoes(request):
+
+    compartilhados = Compartilhamento.objects.filter(owner=request.user)
+
+    form = CompartilharForm(request.POST or None)
+
+    if request.method == "POST":
+
+        if form.is_valid():
+
+            user = form.cleaned_data["username"]
+
+            if user == request.user:
+                messages.error(request, "Não pode partilhar consigo mesmo.")
+            else:
+                Compartilhamento.objects.get_or_create(
+                    owner=request.user, shared_user=user
+                )
+
+                messages.success(
+                    request, f"{user.username} agora pode ver as suas despesas."
+                )
+
+                return redirect("configuracoes")
+
+    return render(
+        request, "configuracoes.html", {"form": form, "compartilhados": compartilhados}
     )
 
 
