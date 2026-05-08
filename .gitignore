@@ -4,6 +4,7 @@ env/
 ENV/
 .venv
 
+.env
 # Ficheiros compilados Python
 __pycache__/
 *.py[cod]
