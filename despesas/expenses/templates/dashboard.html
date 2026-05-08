@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+    {% load l10n %}
+    <style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background: #f5f7fb;
+        margin: 0;
+        padding: 0;
+        color: #2d3748;
+    }
+
+    .container-dash {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: 600;
+    }
+
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .card h4 {
+        margin: 0;
+        font-weight: 500;
+        color: #4a5568;
+    }
+
+    .card span {
+        font-size: 24px;
+        font-weight: 600;
+        color: #2b6cb0;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+
+    canvas {
+        max-height: 400px;
+    }
+    </style>
+    <div class="container-dash">
+        <h2>Dashboard</h2>
+        <div class="card">
+            <h4>Total gasto</h4>
+            <span>{{ total|floatformat:2|localize }} €</span>
+        </div>
+        <div class="chart-container">
+            <canvas id="grafico"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+    let format = (val) => {
+        if (val) {
+            const nJs = parseFloat(val.replace(/\./g, '').replace(',', '.'));
+            return nJs.toFixed(2);
+        }
+        return 0;
+    };
+
+    const labels = [
+        {% for c in por_categoria %}
+            "{{ c.categoria__nome }}",
+        {% endfor %}
+    ];
+
+    const rawData = [
+        {% for c in por_categoria %}
+            "{{ c.total }}",
+        {% endfor %}
+    ];
+
+    const data = rawData.map(val => format(val.toString()));
+
+    new Chart(document.getElementById('grafico'), {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: [
+                    '#4299e1',
+                    '#f56565',
+                    '#ed8936',
+                    '#ecc94b'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        padding: 20,
+                        font: {
+                            size: 13
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.parsed || 0;
+                            return value.toLocaleString('pt-PT', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }) + ' €';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    </script>
+{% endblock content %}

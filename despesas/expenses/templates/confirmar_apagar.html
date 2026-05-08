@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Apagar despesa</h2>
+    <p>Tens a certeza que queres apagar {{ despesa }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger">Sim, apagar</button>
+        <a href="{% url 'lista' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+{% endblock content %}

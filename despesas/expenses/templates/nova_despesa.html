@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+{% block title %}
+    Nova Despesa
+{% endblock title %}
+{% block content %}
+    <style>
+    .form-container {
+        width: 100%;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3rem;
+    }
+
+    .form-card {
+        background: rgba(255,255,255,0.98);
+        border-radius: 28px;
+        box-shadow: 0 22px 80px rgba(50, 112, 255, 0.12);
+        border: 1px solid rgba(102, 126, 234, 0.12);
+        overflow: hidden;
+        padding: 2rem;
+    }
+    .form-control::placeholder {
+        color: #94a3b8;
+        opacity: 1;
+    }
+
+    .form-header {
+        margin-bottom: 1.8rem;
+        text-align: center;
+    }
+
+    .form-header h1 {
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+        letter-spacing: -0.03em;
+        color: #1f2937;
+    }
+
+    .form-header p {
+        margin: 0;
+        color: #475569;
+        font-size: 0.98rem;
+    }
+
+    .expense-form {
+        display: grid;
+        gap: 1.4rem;
+    }
+
+    .form-grid {
+        display: grid;
+        gap: 1.4rem;
+    }
+
+    .form-group {
+        display: grid;
+        gap: 0.5rem;
+    }
+
+    .form-group label {
+        font-weight: 700;
+        color: #334155;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        background: #f8fbff;
+        border: 1px solid #dbeafe;
+        border-radius: 16px;
+        padding: 0.95rem 1rem;
+        font-size: 0.98rem;
+        color: #0f172a;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+        background: #ffffff;
+    }
+
+    .form-errors {
+        background: rgba(248, 113, 113, 0.12);
+        color: #b91c1c;
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        font-size: 0.92rem;
+    }
+
+    .help-text {
+        color: #64748b;
+        font-size: 0.88rem;
+        line-height: 1.4;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 0.9rem;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
+    }
+
+    .btn {
+        border-radius: 999px;
+        padding: 0.95rem 1.6rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 18px 40px rgba(79, 70, 229, 0.18);
+    }
+
+    .btn-secondary {
+        background: #f8fafc;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+    }
+
+    @media (max-width: 640px) {
+        .form-container {
+            padding: 1.5rem 0.75rem 2rem;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .form-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .form-actions {
+            justify-content: stretch;
+        }
+
+        .btn {
+            width: 100%;
+        }
+    }
+
+    @media (min-width: 860px) {
+        .form-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .descricao-group {
+            grid-column: span 3;
+        }
+
+        .form-actions {
+            justify-content: flex-start;
+        }
+
+        .btn {
+            width: auto;
+        }
+    }
+    </style>
+    <div class="fade-in">
+        <div class="form-container">
+            <div class="form-card">
+                <div class="form-header">
+                    <h1>
+                        💰
+                        {% if is_edit %}
+                            Editar Despesa
+                        {% else %}
+                            Nova Despesa
+                        {% endif %}
+                    </h1>
+                    <p>
+                        {% if is_edit %}
+                            Atualize os detalhes da sua despesa.
+                        {% else %}
+                            Registe uma nova despesa no sistema.
+                        {% endif %}
+                    </p>
+                </div>
+                <form method="post" class="expense-form">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="form-errors">
+                            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-grid">
+                        <div class="form-group {% if form.categoria.errors %}field-with-error{% endif %}">
+                            <label for="{{ form.categoria.id_for_label }}">📂 Categoria</label>
+                            {{ form.categoria }}
+                            <datalist id="categorias-list">
+                                {% for categoria in categorias %}<option value="{{ categoria.nome }}"></option>{% endfor %}
+                            </datalist>
+                            {% if form.categoria.errors %}
+                                <div class="form-errors" style="margin-top: 5px;">
+                                    {% for error in form.categoria.errors %}<p>{{ error }}</p>{% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.categoria.help_text %}<div class="help-text">{{ form.categoria.help_text|safe }}</div>{% endif %}
+                        </div>
+                        <div class="form-group {% if form.valor.errors %}field-with-error{% endif %}">
+                            <label for="{{ form.valor.id_for_label }}">💰 Valor (€)</label>
+                            {{ form.valor }}
+                            {% if form.valor.errors %}
+                                <div class="form-errors" style="margin-top: 5px;">
+                                    {% for error in form.valor.errors %}<p>{{ error }}</p>{% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.valor.help_text %}<div class="help-text">{{ form.valor.help_text|safe }}</div>{% endif %}
+                        </div>
+                        <div class="form-group data-group {% if form.data.errors %}field-with-error{% endif %}">
+                            <label for="{{ form.data.id_for_label }}">📅 Data</label>
+                            {{ form.data }}
+                            {% if form.data.errors %}
+                                <div class="form-errors" style="margin-top: 5px;">
+                                    {% for error in form.data.errors %}<p>{{ error }}</p>{% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.data.help_text %}<div class="help-text">{{ form.data.help_text|safe }}</div>{% endif %}
+                        </div>
+                        <div class="form-group descricao-group {% if form.descricao.errors %}field-with-error{% endif %}">
+                            <label for="{{ form.descricao.id_for_label }}">📝 Descrição</label>
+                            {{ form.descricao }}
+                            {% if form.descricao.errors %}
+                                <div class="form-errors" style="margin-top: 5px;">
+                                    {% for error in form.descricao.errors %}<p>{{ error }}</p>{% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.descricao.help_text %}<div class="help-text">{{ form.descricao.help_text|safe }}</div>{% endif %}
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            {% if is_edit %}
+                                💾 Atualizar Despesa
+                            {% else %}
+                                💾 Guardar Despesa
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'lista' %}" class="btn btn-secondary">❌ Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

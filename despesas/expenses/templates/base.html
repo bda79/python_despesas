@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>
+            {% block title %}
+                Controle de Despesas
+            {% endblock title %}
+        </title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
+              rel="stylesheet">
+        <!-- Modern Normalize -->
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/1.1.0/modern-normalize.min.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet"
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <!-- Bootstrap (CDN) -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+              rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <style>
+        /* Reset e base */
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #2d3748;
+            background-color: #f7fafc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        main .container {
+            min-height: 0;
+        }
+
+        /* Header/Navigation */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            padding: 0.75rem 0;
+        }
+
+        .navbar .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: white !important;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .navbar-brand:hover {
+            color: #e2e8f0 !important;
+            text-decoration: none;
+            opacity: 0.9;
+        }
+
+        .navbar-nav-custom {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .navbar-nav-links {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+        }
+
+        .navbar-nav-custom a {
+            color: white !important;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .navbar-nav-custom a:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .navbar-nav-custom a.active {
+            font-weight: 700;
+        }
+
+        .navbar-nav-custom a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0.6rem;
+            left: 1rem;
+            right: 1rem;
+            height: 2px;
+            background: white;
+            border-radius: 999px;
+        }
+
+        .navbar-nav-right {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            margin-left: auto;
+            padding-left: 1rem;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .navbar-user {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .navbar-logout {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .navbar-logout:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main content */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(72, 187, 120, 0.6);
+        }
+
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: rgba(72, 187, 120, 0.12);
+            color: #14532d;
+            border: 1px solid rgba(72, 187, 120, 0.25);
+        }
+
+        .alert-error,
+        .alert-danger {
+            background: rgba(245, 101, 101, 0.12);
+            color: #991b1b;
+            border: 1px solid rgba(245, 101, 101, 0.25);
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.12);
+            color: #1d4ed8;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .alert {
+            transition: opacity 0.4s ease, transform 0.4s ease, max-height 0.4s ease, margin 0.4s ease, padding 0.4s ease;
+        }
+
+        .alert.fade-out {
+            opacity: 0;
+            transform: translateY(-10px);
+            max-height: 0;
+            margin: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: hidden;
+        }
+
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Form elements */
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        /* Modal */
+        #sessionModal .modal-content {
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        #countdown {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        /* Barra de progresso */
+        .progress {
+            height: 10px;
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            transition: width 1s linear;
+        }
+
+        /* Footer */
+        footer {
+            background: #2d3748;
+            color: white;
+            text-align: center;
+            padding: 0.75rem 0;
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar-nav-custom {
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-top: 1rem;
+            }
+
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+
+            .btn {
+                padding: 0.625rem 1.25rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Utilities */
+        .text-center { text-align: center; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mt-3 { margin-top: 1rem; }
+        .mt-4 { margin-top: 1.5rem; }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        </style>
+    </head>
+    <body data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}">
+        <header>
+            <nav class="navbar">
+                <div class="container">
+                    <a href="{% url 'lista' %}" class="navbar-brand">
+                        <i class="fas fa-wallet"></i> Controle de Despesas
+                    </a>
+                    <div class="navbar-nav-custom">
+                        {% if user.is_authenticated %}
+                            <div class="navbar-nav-links">
+                                <a href="{% url 'lista' %}"
+                                   title="Lista de despesas"
+                                   class="{% if request.resolver_match.url_name == 'lista' %}active{% endif %}">
+                                    <i class="fas fa-list"></i> Lista
+                                </a>
+                                <a href="{% url 'nova_despesa' %}"
+                                   title="Adicionar despesa"
+                                   class="{% if request.resolver_match.url_name == 'nova_despesa' %}active{% endif %}">
+                                    <i class="fas fa-plus"></i> Nova
+                                </a>
+                                <a href="{% url 'dashboard' %}"
+                                   title="Dashboard"
+                                   class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                                    <i class="fas fa-chart-pie"></i> Dashboard
+                                </a>
+                            </div>
+                            <div class="navbar-nav-right">
+                                <span class="navbar-user">
+                                    <i class="fas fa-user-circle"></i> {{ user.username }}
+                                </span>
+                                <a href="#"
+                                   class="navbar-logout"
+                                   title="Sair"
+                                   onclick="logoutNow(); return false;">
+                                    <i class="fas fa-sign-out-alt"></i> Sair
+                                </a>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'login' %}" title="Fazer login">
+                                <i class="fas fa-lock"></i> Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </nav>
+        </header>
+        <main>
+            <div class="container">
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}<div class="alert alert-{{ message.tags }}">{{ message }}</div>{% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}
+                {% endblock content %}
+            </div>
+        </main>
+        <footer>
+            <p>© 2026 Controle de Despesas | Desenvolvido com ❤️</p>
+        </footer>
+        <div class="modal fade" id="sessionModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content p-4">
+                    <h4>Sessão expirando</h4>
+                    <p>Você será desconectado em:</p>
+                    <div id="countdown">60</div>
+                    <!-- Barra -->
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar bg-danger" style="width:100%"></div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-success" onclick="stayLoggedIn()">Continuar</button>
+                        <button class="btn btn-danger" onclick="logoutNow()">Sair agora</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+
+                /* CONFIG */
+                const IS_AUTH = document.body.dataset.authenticated === "true";
+                if (!IS_AUTH) return;
+
+                const MAX_IDLE = 300;       // 5 min
+                const WARNING_TIME = 240;   // show modal at 4 min
+                const COUNTDOWN_START = 60;
+
+                /* STATE */
+                let countdown = COUNTDOWN_START;
+                let countdownInterval = null;
+                let isWarningVisible = false;
+
+                const modalEl = document.getElementById('sessionModal');
+
+                if (!modalEl || typeof bootstrap === "undefined") {
+                    console.error("Bootstrap modal not available");
+                    return;
+                }
+
+                const modal = new bootstrap.Modal(modalEl, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
+
+                /* HELPERS */
+                function getCSRFToken() {
+                    return document.cookie.split('; ')
+                        .find(row => row.startsWith('csrftoken'))
+                        ?.split('=')[1];
+                }
+
+                function updateLastActivity() {
+                    localStorage.setItem("lastActivity", Date.now());
+                }
+
+                function getIdleTime() {
+                    const last = parseInt(localStorage.getItem("lastActivity") || Date.now());
+                    return Math.floor((Date.now() - last) / 1000);
+                }
+
+                /* SESSION CONTROL */
+                function resetTimer() {
+                    // Ignore activity while modal is visible (secure mode)
+                    if (isWarningVisible) return;
+                    updateLastActivity();
+                }
+
+                function showModal() {
+                    if (isWarningVisible) return;
+
+                    isWarningVisible = true;
+                    countdown = COUNTDOWN_START;
+
+                    modal.show();
+                    updateCountdown();
+
+                    countdownInterval = setInterval(() => {
+                        countdown--;
+                        updateCountdown();
+
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            logoutNow();
+                        }
+                    }, 1000);
+                }
+
+                function hideModal() {
+                    isWarningVisible = false;
+                    clearInterval(countdownInterval);
+                    modal.hide();
+                }
+
+                function updateCountdown() {
+                    const countdownEl = document.getElementById("countdown");
+                    const progressBar = document.getElementById("progressBar");
+
+                    if (countdownEl) countdownEl.innerText = countdown;
+
+                    if (progressBar) {
+                        let percent = (countdown / COUNTDOWN_START) * 100;
+                        progressBar.style.width = percent + "%";
+                    }
+                }
+
+                /* SERVER CALLS */
+                function stayLoggedIn() {
+                    fetch("/keep-alive/", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCSRFToken(),
+                            "Content-Type": "application/json"
+                        }
+                    }).then(() => {
+                        hideModal();
+                        updateLastActivity();
+                    });
+                }
+
+                function logoutNow() {
+                    fetch("/logout/", {
+                        method: "POST",
+                        headers: {
+                            "X-CSRFToken": getCSRFToken()
+                        }
+                    }).finally(() => {
+                        window.location.href = "/login/";
+                    });
+                }
+
+                // expose ONLY what HTML needs
+                window.stayLoggedIn = stayLoggedIn;
+                window.logoutNow = logoutNow;
+
+                /* ACTIVITY LISTENERS */
+                ["click", "mousemove", "keypress", "scroll"].forEach(event => {
+                    document.addEventListener(event, resetTimer);
+                });
+
+                /* MAIN LOOP */
+                setInterval(() => {
+                    const idleTime = getIdleTime();
+
+                    if (idleTime >= WARNING_TIME && !isWarningVisible) {
+                        showModal();
+                    }
+
+                    if (idleTime >= MAX_IDLE && !isWarningVisible) {
+                        logoutNow();
+                    }
+
+                }, 1000);
+
+                /* TAB SYNC */
+                window.addEventListener("storage", (event) => {
+                    if (event.key === "lastActivity" && !isWarningVisible) {
+                        updateLastActivity();
+                    }
+                });
+
+                /* ALERT AUTO-DISMISS */
+                const messages = document.querySelectorAll('.alert');
+
+                if (messages.length) {
+                    setTimeout(() => {
+
+                        // Do NOT remove alerts if modal is open
+                        if (document.body.classList.contains('modal-open')) return;
+
+                        messages.forEach(message => {
+                            message.classList.add('fade-out');
+
+                            message.addEventListener('transitionend', function () {
+                                const parent = message.parentElement;
+                                message.remove();
+
+                                if (parent && parent.children.length === 0) {
+                                    parent.remove();
+                                }
+                            }, { once: true });
+                        });
+
+                    }, 4000);
+                }
+
+                /* INIT */
+                updateLastActivity();
+
+            });
+        </script>
+    </body>
+</html>

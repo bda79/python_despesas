@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}
+    Criar Conta
+{% endblock title %}
+{% block content %}
+    <style>
+
+.auth-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 30px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    background-color: white;
+    border-left: 4px solid #667eea;
+}
+
+.auth-container h1 {
+    text-align: center;
+    color: #2d3748;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+    </style>
+    <div class="auth-container fade-in">
+        <h1>📝 Criar Conta</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Utilizador</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                {{ form.password1 }}
+            </div>
+            <div class="form-group">
+                <label>Confirmar Password</label>
+                {{ form.password2 }}
+            </div>
+            <button type="submit" class="submit-btn">Criar Conta</button>
+        </form>
+    </div>
+{% endblock content %}
