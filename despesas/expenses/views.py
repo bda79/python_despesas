@@ -2,9 +2,9 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import User
 from django.db.models import Sum, FloatField, Q
 from django.db.models.functions import Cast
 from .forms import DespesaForm, RegisterForm, CompartilharForm
@@ -70,15 +70,38 @@ def register_view(request):
 @login_required
 def lista_despesas(request):
 
-    users_permitidos = User.objects.filter(
-        Q(id=request.user.id) | Q(shared_with__shared_user=request.user)
-    ).distinct()
+    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
 
-    despesas = Despesa.objects.filter(user__in=users_permitidos).order_by("-data")
+    tem_partilha = compartilhamento is not None
 
-    total = sum(d.valor for d in despesas)
+    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
 
-    return render(request, "lista.html", {"despesas": despesas, "total": total})
+    # impedir acesso manual
+    if request.GET.get("shared") == "1" and not tem_partilha:
+        return redirect("lista")
+
+    if ver_conjunto:
+
+        despesas = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner)
+        )
+
+    else:
+
+        despesas = Despesa.objects.filter(user=request.user)
+
+    total = despesas.aggregate(Sum("valor"))["valor__sum"] or 0
+
+    return render(
+        request,
+        "lista.html",
+        {
+            "despesas": despesas,
+            "total": total,
+            "tem_partilha": tem_partilha,
+            "ver_conjunto": ver_conjunto,
+        },
+    )
 
 
 @login_required
@@ -155,31 +178,62 @@ def dashboard(request):
 @login_required
 def configuracoes(request):
 
-    compartilhados = Compartilhamento.objects.filter(owner=request.user)
+    partilha_existente = Compartilhamento.objects.filter(owner=request.user).first()
 
-    form = CompartilharForm(request.POST or None)
+    form = CompartilharForm()
 
-    if request.method == "POST":
+    # REMOVER
+    if request.method == "POST" and "remove_partilha" in request.POST:
+
+        Compartilhamento.objects.filter(owner=request.user).delete()
+
+        messages.success(request, "Partilha removida.")
+
+        return redirect("configuracoes")
+
+    # ADICIONAR
+    if request.method == "POST" and "email" in request.POST:
+
+        form = CompartilharForm(request.POST)
 
         if form.is_valid():
 
-            user = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
 
-            if user == request.user:
-                messages.error(request, "Não pode partilhar consigo mesmo.")
-            else:
-                Compartilhamento.objects.get_or_create(
-                    owner=request.user, shared_user=user
-                )
+            try:
 
-                messages.success(
-                    request, f"{user.username} agora pode ver as suas despesas."
-                )
+                user = User.objects.get(email=email)
 
-                return redirect("configuracoes")
+                if user == request.user:
+
+                    form.add_error("email", "Não pode partilhar consigo mesmo.")
+
+                elif partilha_existente:
+
+                    form.add_error("email", "Já existe uma partilha configurada.")
+
+                else:
+
+                    Compartilhamento.objects.create(
+                        owner=request.user,
+                        shared_user=user,
+                    )
+
+                    messages.success(request, "Partilha criada com sucesso.")
+
+                    return redirect("configuracoes")
+
+            except User.DoesNotExist:
+
+                form.add_error("email", "Utilizador não encontrado.")
 
     return render(
-        request, "configuracoes.html", {"form": form, "compartilhados": compartilhados}
+        request,
+        "configuracoes.html",
+        {
+            "form": form,
+            "partilha_existente": partilha_existente,
+        },
     )
 
 

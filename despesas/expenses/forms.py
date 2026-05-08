@@ -115,12 +115,12 @@ class RegisterForm(UserCreationForm):
 
 
 class CompartilharForm(forms.Form):
-    username = forms.CharField(label="Utilizador")
-
-    def clean_username(self):
-        username = self.cleaned_data["username"]
-
-        try:
-            return User.objects.get(username=username)
-        except User.DoesNotExist:
-            raise forms.ValidationError("Utilizador não encontrado")
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Digite o email do utilizador ou username para partilhar",
+            }
+        ),
+    )

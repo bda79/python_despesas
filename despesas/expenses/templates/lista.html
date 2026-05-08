@@ -378,6 +378,12 @@
                     <i class="fas fa-chart-pie"></i> Minhas Despesas
                 </h1>
             </div>
+            <div style="margin-bottom:20px; display:flex; gap:10px;">
+                {% if tem_partilha %}
+                    <a href="{% url 'lista' %}" class="btn btn-secondary">Minhas despesas</a>
+                    <a href="{% url 'lista' %}?shared=1" class="btn btn-primary">Ver em conjunto</a>
+                {% endif %}
+            </div>
             {% if despesas %}
                 <div class="stats-row">
                     <div class="stat-box">

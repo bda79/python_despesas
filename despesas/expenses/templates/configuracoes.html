@@ -14,134 +14,43 @@
     background: rgba(255,255,255,0.98);
     border-radius: 28px;
     box-shadow: 0 22px 80px rgba(50, 112, 255, 0.12);
-    border: 1px solid rgba(102, 126, 234, 0.12);
-    overflow: hidden;
     padding: 2rem;
 }
 
 .form-header {
-    margin-bottom: 1.8rem;
     text-align: center;
+    margin-bottom: 1.5rem;
 }
 
 .form-header h1 {
-    margin-bottom: 0.5rem;
     font-size: 2rem;
-    letter-spacing: -0.03em;
     color: #1f2937;
 }
 
-.form-header p {
-    margin: 0;
-    color: #475569;
-    font-size: 0.98rem;
-}
-
-.form-grid {
-    display: grid;
-    gap: 1.4rem;
-}
-
 .form-group {
-    display: grid;
-    gap: 0.5rem;
-}
-
-.form-group label {
-    font-weight: 700;
-    color: #334155;
-    font-size: 0.95rem;
+    margin-top: 1rem;
 }
 
 .form-control {
     width: 100%;
-    background: #f8fbff;
-    border: 1px solid #dbeafe;
+    padding: 0.9rem;
     border-radius: 16px;
-    padding: 0.95rem 1rem;
-    font-size: 0.98rem;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
-    background: #ffffff;
-}
-
-.form-errors {
-    background: rgba(248, 113, 113, 0.12);
-    color: #b91c1c;
-    border-radius: 12px;
-    padding: 0.85rem 1rem;
-    font-size: 0.92rem;
-}
-
-.help-text {
-    color: #64748b;
-    font-size: 0.88rem;
-}
-
-.form-actions {
-    display: flex;
-    gap: 0.9rem;
-    justify-content: flex-end;
-    margin-top: 1rem;
-}
-
-.btn {
-    border-radius: 999px;
-    padding: 0.95rem 1.6rem;
-    font-weight: 700;
+    border: 1px solid #dbeafe;
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+    background: #4f46e5;
     color: white;
+    padding: 0.9rem 1.4rem;
+    border-radius: 999px;
     border: none;
 }
 
 .btn-secondary {
-    background: #f8fafc;
-    color: #334155;
-    border: 1px solid #cbd5e1;
-}
-
-.list-box {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
-}
-
-.list-box h3 {
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    color: #1f2937;
-}
-
-.shared-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.shared-list li {
-    background: #f8fbff;
-    border: 1px solid #e2e8f0;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    margin-bottom: 0.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.badge {
-    background: rgba(102, 126, 234, 0.12);
-    color: #1e40af;
-    padding: 0.3rem 0.75rem;
+    background: #f1f5f9;
+    padding: 0.9rem 1.4rem;
     border-radius: 999px;
-    font-size: 0.85rem;
+    border: 1px solid #cbd5e1;
 }
     </style>
     <div class="fade-in">
@@ -149,47 +58,32 @@
             <div class="form-card">
                 <div class="form-header">
                     <h1>⚙️ Configurações</h1>
-                    <p>Gerir quem pode ver as suas despesas</p>
+                    <p>Gerir partilha de despesas</p>
                 </div>
-                <!-- FORM -->
-                <form method="post">
-                    {% csrf_token %}
-                    {% if form.non_field_errors %}
-                        <div class="form-errors">
-                            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
-                        </div>
-                    {% endif %}
-                    <div class="form-grid">
+                {% if partilha_existente %}
+                    <div style="margin-top:20px;">
+                        <p>
+                            Está a partilhar com:
+                            <strong>{{ partilha_existente.shared_user.email }}</strong>
+                        </p>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="remove_partilha" value="1">
+                            <button class="btn btn-danger">Remover Partilha</button>
+                        </form>
+                    </div>
+                {% else %}
+                    <form method="post">
+                        {% csrf_token %}
                         <div class="form-group">
-                            <label>👤 Adicionar utilizador</label>
-                            {{ form.username }}
-                            {% if form.username.errors %}
-                                <div class="form-errors">
-                                    {% for error in form.username.errors %}<p>{{ error }}</p>{% endfor %}
-                                </div>
-                            {% endif %}
-                            <div class="help-text">Escreva o username da pessoa que terá acesso às suas despesas.</div>
+                            <label>Email do utilizador</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div class="form-errors">{{ form.email.errors }}</div>{% endif %}
                         </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">➕ Adicionar acesso</button>
-                        <a href="{% url 'lista' %}" class="btn btn-secondary">❌ Voltar</a>
-                    </div>
-                </form>
-                <!-- LISTA -->
-                <div class="list-box">
-                    <h3>🔐 Pessoas com acesso às suas despesas</h3>
-                    <ul class="shared-list">
-                        {% for c in compartilhados %}
-                            <li>
-                                <span>{{ c.shared_user.username }}</span>
-                                <span class="badge">tem acesso</span>
-                            </li>
-                        {% empty %}
-                            <li>Ninguém tem acesso às suas despesas</li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                        <br>
+                        <button class="btn btn-primary">Partilhar</button>
+                    </form>
+                {% endif %}
             </div>
         </div>
     </div>

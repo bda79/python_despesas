@@ -25,6 +25,9 @@ class Despesa(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor")
     data = models.DateField(verbose_name="Data")
     descricao = models.TextField(blank=True, verbose_name="Descrição")
+    """ shared_with = models.ManyToManyField(
+        User, related_name="despesas_partilhadas", blank=True
+    ) """
 
     class Meta:
         verbose_name = "Despesa"
@@ -36,12 +39,17 @@ class Despesa(models.Model):
 
 
 class Compartilhamento(models.Model):
-    owner = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="shared_with"
+
+    owner = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name="compartilhamento",
     )
 
     shared_user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="can_view_from"
+        User,
+        on_delete=models.CASCADE,
+        related_name="recebe_acesso",
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
