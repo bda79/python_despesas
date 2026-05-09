@@ -156,3 +156,6 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]

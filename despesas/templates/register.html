@@ -1,78 +1,12 @@
 {% extends "base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/register.css' %}">
+{% endblock extra_css %}
 {% block title %}
     Criar Conta
 {% endblock title %}
 {% block content %}
-    <style>
-.auth-container {
-    margin-top: 5px !important;
-    width: 450px;
-    margin: 0 auto;
-    padding: 30px;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    background-color: white;
-    border-left: 4px solid #667eea;
-}
-
-main .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.auth-container h1 {
-    text-align: center;
-    color: #2d3748;
-    margin-bottom: 30px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-}
-
-.submit-btn {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-}
-.info-text {
-    text-align: center;
-    margin-top: 20px;
-    color: #718096;
-    font-size: 14px;
-}
-
-.forgot-link {
-    color: #667eea;
-    text-decoration: none;
-    font-weight: 700;
-    transition: all 0.3s ease;
-}
-
-.forgot-link:hover {
-    color: #764ba2;
-    text-decoration: underline;
-}
-
-    </style>
     <div class="auth-container fade-in">
         <h1>📝 Criar Conta</h1>
         <form method="post">
