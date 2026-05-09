@@ -11,6 +11,17 @@
             <h4>Total gasto</h4>
             <span>{{ total|floatformat:2|localize }} €</span>
         </div>
+        <div style="margin-bottom:20px; display:flex; gap:10px;">
+            {% if tem_partilha %}
+                <a href="{% url 'dashboard' %}"
+                   class="btn {% if not ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
+                    Minhas despesas
+                </a>
+                <a href="{% url 'dashboard' %}?shared=1"
+                   class="btn {% if ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">Ver em conjunto</a>
+            {% endif %}
+        </div>
+        {% if ver_conjunto %}<p>A mostrar despesas partilhadas</p>{% endif %}
         <div class="chart-container">
             <canvas id="grafico"></canvas>
         </div>

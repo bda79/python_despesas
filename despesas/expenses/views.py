@@ -240,17 +240,42 @@ def resumo_mensal(request):
 
 @login_required
 def dashboard(request):
-    despesas = Despesa.objects.filter(user=request.user)
+
+    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
+
+    tem_partilha = compartilhamento is not None
+
+    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
+
+    # impedir acesso manual
+    if request.GET.get("shared") == "1" and not tem_partilha:
+        return redirect("dashboard")
+
+    if ver_conjunto:
+
+        despesas = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner), tipo="saida"
+        )
+
+    else:
+
+        despesas = Despesa.objects.filter(user=request.user, tipo="saida")
 
     total = despesas.aggregate(Sum("valor"))["valor__sum"] or 0
 
-    # por_categoria = despesas.values("categoria__nome").annotate(total=Sum("valor"))
     por_categoria = despesas.values("categoria__nome").annotate(
         total=Cast(Sum("valor"), FloatField())
     )
 
     return render(
-        request, "dashboard.html", {"total": total, "por_categoria": por_categoria}
+        request,
+        "dashboard.html",
+        {
+            "total": total,
+            "por_categoria": por_categoria,
+            "tem_partilha": tem_partilha,
+            "ver_conjunto": ver_conjunto,
+        },
     )
 
 
