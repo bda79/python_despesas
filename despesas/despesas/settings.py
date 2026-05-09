@@ -52,6 +52,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "expenses.middleware.SessionIdleTimeout",
+    "expenses.middleware.SlowRequestMiddleware",
 ]
 
 ROOT_URLCONF = "despesas.urls"

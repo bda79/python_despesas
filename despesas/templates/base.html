@@ -390,6 +390,154 @@
             opacity: 0.8;
         }
 
+        /* =========================
+        SPINNER
+        ========================= */
+         /* OVERLAY */
+        #loading-overlay{
+            position: fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background: rgba(0,0,0,0.5);
+
+            display:none;
+
+            justify-content:center;
+            align-items:center;
+
+            z-index:9999;
+        }
+
+        /* SPINNER */
+        .spinner{
+            width:70px;
+            height:70px;
+
+            border:8px solid #f3f3f3;
+            border-top:8px solid #3498db;
+
+            border-radius:50%;
+
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin{
+            0%{
+                transform: rotate(0deg);
+            }
+
+            100%{
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =========================
+        AUTH PAGES
+        ========================= */
+
+        .auth-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            background-color: white;
+            border-left: 5px solid #667eea;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .auth-container h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .auth-container .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-container .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #4a5568;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .auth-container input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .auth-container input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+        }
+
+        .auth-container .submit-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .auth-container .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.35);
+        }
+
+        .auth-container .info-text {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #718096;
+        }
+
+        .auth-container .forgot-link {
+            color: #667eea;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .auth-container .forgot-link:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .auth-container .form-errors {
+            background-color: #fed7d7;
+            color: #c53030;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid #feb2b2;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .navbar-nav-custom {
@@ -427,6 +575,10 @@
         </style>
     </head>
     <body data-authenticated="{% if request.user.is_authenticated %}true{% else %}false{% endif %}">
+        <!-- SPINNER -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+        </div>
         <header>
             <nav class="navbar">
                 <div class="container">
@@ -509,6 +661,93 @@
             </div>
         </div>
         <script>
+            //Spinner global control
+            const overlay = document.getElementById('loading-overlay');
+
+            let spinnerTimeout;
+
+            /*
+            MOSTRA spinner somente se demorar
+            */
+            function startLoading(){
+
+                spinnerTimeout = setTimeout(() => {
+                    overlay.style.display = 'flex';
+                }, 400); // mostra somente após 400ms
+            }
+
+            function stopLoading(){
+
+                clearTimeout(spinnerTimeout);
+                overlay.style.display = 'none';
+            }
+
+            /*
+            LINKS
+            */
+            document.addEventListener('click', function(e){
+
+                const link = e.target.closest('a');
+
+                if(link){
+
+                    const href = link.getAttribute('href');
+
+                    if(
+                        href &&
+                        !href.startsWith('#') &&
+                        !href.startsWith('javascript')
+                    ){
+                        startLoading();
+                    }
+                }
+            });
+
+            /*
+            FORMULÁRIOS
+            */
+            document.addEventListener('submit', function(){
+
+                startLoading();
+            });
+
+            /*
+            FETCH API
+            */
+            const originalFetch = window.fetch;
+
+            window.fetch = async function(){
+
+                startLoading();
+
+                try{
+
+                    const response = await originalFetch.apply(this, arguments);
+
+                    return response;
+
+                }finally{
+
+                    stopLoading();
+                }
+            };
+
+            /*
+            Quando página terminar carregamento
+            */
+            window.addEventListener('load', function(){
+
+                stopLoading();
+            });
+
+            /*
+            Botão voltar do navegador
+            */
+            window.addEventListener('pageshow', function(){
+
+                stopLoading();
+            });
+
             document.addEventListener("DOMContentLoaded", function () {
 
                 /* CONFIG */
