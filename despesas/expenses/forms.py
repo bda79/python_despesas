@@ -21,25 +21,23 @@ class DespesaForm(forms.ModelForm):
 
     class Meta:
         model = Despesa
-        fields = ["categoria", "valor", "data", "descricao"]
+        fields = ["tipo", "categoria", "valor", "data", "descricao"]
         widgets = {
+            "tipo": forms.Select(attrs={"class": "form-control"}),
             "valor": forms.NumberInput(attrs={"class": "form-control"}),
             "data": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
             "descricao": forms.Textarea(attrs={"class": "form-control"}),
         }
         labels = {
+            "tipo": "Tipo",
             "categoria": "Categoria",
             "valor": "Valor",
             "data": "Data",
             "descricao": "Descrição",
         }
-        help_texts = {
-            "categoria": "Selecione uma categoria",
-            "valor": "Digite o valor da despesa",
-            "data": "Digite a data da despesa",
-            "descricao": "Digite uma descrição da despesa",
-        }
+
         error_messages = {
+            "tipo": {"required": "O tipo de despesa é obrigatório"},
             "categoria": {"required": "A categoria é obrigatória"},
             "valor": {"required": "O valor é obrigatório"},
             "data": {"required": "A data é obrigatória"},
@@ -53,23 +51,22 @@ class DespesaForm(forms.ModelForm):
             self.initial["categoria"] = categoria_nome
             self.fields["categoria"].initial = categoria_nome
 
+        self.fields["tipo"].widget.attrs["class"] = "form-control"
         self.fields["valor"].widget.attrs["class"] = "form-control"
         self.fields["data"].widget.attrs["class"] = "form-control"
         self.fields["descricao"].widget.attrs["class"] = "form-control"
 
+        self.fields["tipo"].widget.attrs[
+            "placeholder"
+        ] = "Selecione o tipo de movimento"
         self.fields["categoria"].widget.attrs[
             "placeholder"
         ] = "Selecione ou escreva uma categoria"
-        self.fields["valor"].widget.attrs["placeholder"] = "Digite o valor da despesa"
-        self.fields["data"].widget.attrs["placeholder"] = "Digite a data da despesa"
+        self.fields["valor"].widget.attrs["placeholder"] = "Digite o valor do movimento"
+        self.fields["data"].widget.attrs["placeholder"] = "Digite a data do movimento"
         self.fields["descricao"].widget.attrs[
             "placeholder"
-        ] = "Digite uma descrição da despesa"
-
-        self.fields["categoria"].help_text = "Selecione ou escreva uma categoria"
-        self.fields["valor"].help_text = "Digite o valor da despesa"
-        self.fields["data"].help_text = "Digite a data da despesa"
-        self.fields["descricao"].help_text = "Digite uma descrição da despesa"
+        ] = "Digite uma descrição do movimento"
 
         self.fields["valor"].error_messages = {"required": "O valor é obrigatório"}
         self.fields["data"].error_messages = {"required": "A data é obrigatória"}
@@ -77,11 +74,13 @@ class DespesaForm(forms.ModelForm):
             "required": "A descrição é obrigatória"
         }
 
+        self.fields["tipo"].label = "Tipo"
         self.fields["categoria"].label = "Categoria"
         self.fields["valor"].label = "Valor"
         self.fields["data"].label = "Data"
         self.fields["descricao"].label = "Descrição"
 
+        self.fields["tipo"].required = True
         self.fields["categoria"].required = True
         self.fields["valor"].required = True
         self.fields["data"].required = True

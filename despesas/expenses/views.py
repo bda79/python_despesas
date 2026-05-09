@@ -7,6 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.db.models import Sum, FloatField, Q
 from django.db.models.functions import Cast
+from django.utils import timezone
 from .forms import DespesaForm, RegisterForm, CompartilharForm
 from .models import Despesa, Categoria, Compartilhamento
 
@@ -90,14 +91,24 @@ def lista_despesas(request):
 
         despesas = Despesa.objects.filter(user=request.user)
 
-    total = despesas.aggregate(Sum("valor"))["valor__sum"] or 0
+    total_entradas = (
+        despesas.filter(tipo="entrada").aggregate(Sum("valor"))["valor__sum"] or 0
+    )
+
+    total_saidas = (
+        despesas.filter(tipo="saida").aggregate(Sum("valor"))["valor__sum"] or 0
+    )
+
+    saldo = total_entradas - total_saidas
 
     return render(
         request,
         "lista.html",
         {
             "despesas": despesas,
-            "total": total,
+            "total_entradas": total_entradas,
+            "total_saidas": total_saidas,
+            "saldo": saldo,
             "tem_partilha": tem_partilha,
             "ver_conjunto": ver_conjunto,
         },
@@ -157,6 +168,74 @@ def apagar_despesa(request, id):
         return redirect("lista")
 
     return render(request, "confirmar_apagar.html", {"despesa": despesa})
+
+
+@login_required
+def resumo_mensal(request):
+
+    hoje = timezone.now()
+
+    mes = request.GET.get("mes")
+    ano = request.GET.get("ano")
+
+    try:
+        mes = int(str(mes).replace(".", "")) if mes else hoje.month
+    except ValueError:
+        mes = hoje.month
+
+    try:
+        ano = int(str(ano).replace(".", "")) if ano else hoje.year
+    except ValueError:
+        ano = hoje.year
+
+    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
+
+    tem_partilha = compartilhamento is not None
+
+    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
+
+    # impedir acesso manual
+    if request.GET.get("shared") == "1" and not tem_partilha:
+        return redirect("resumo_mensal")
+
+    if ver_conjunto:
+
+        movimentos = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner),
+            data__month=mes,
+            data__year=ano,
+        )
+
+    else:
+
+        movimentos = Despesa.objects.filter(
+            user=request.user,
+            data__month=mes,
+            data__year=ano,
+        )
+
+    entradas = (
+        movimentos.filter(tipo="entrada").aggregate(Sum("valor"))["valor__sum"] or 0
+    )
+
+    saidas = movimentos.filter(tipo="saida").aggregate(Sum("valor"))["valor__sum"] or 0
+
+    saldo = entradas - saidas
+
+    return render(
+        request,
+        "resumo_mensal.html",
+        {
+            "movimentos": movimentos,
+            "entradas": entradas,
+            "saidas": saidas,
+            "saldo": saldo,
+            "mes": mes,
+            "ano": ano,
+            "tem_partilha": tem_partilha,
+            "ver_conjunto": ver_conjunto,
+        },
+    )
 
 
 @login_required

@@ -49,12 +49,27 @@ def format_pt(value):
 
 @register.filter
 def format_currency_pt(value):
-    """
-    Formata um valor com símbolo de euro no formato português.
-    Exemplo: 1234.56 -> 1.234,56€
-    """
+
+    if value is None:
+        return "0,00€"
+
     try:
-        formatted = format_pt(value)
+        value = float(value)
+
+        negativo = value < 0
+
+        value = abs(value)
+
+        formatted = f"{value:,.2f}"
+
+        formatted = formatted.replace(",", "X")
+        formatted = formatted.replace(".", ",")
+        formatted = formatted.replace("X", ".")
+
+        if negativo:
+            formatted = f"-{formatted}"
+
         return f"{formatted}€"
-    except Exception:
-        return str(value)
+
+    except (ValueError, TypeError):
+        return value

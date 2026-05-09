@@ -15,7 +15,12 @@ class Categoria(models.Model):
 
 
 class Despesa(models.Model):
+    TIPO_COICES = [("saida", "Saída"), ("entrada", "Entrada")]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuário")
+
+    tipo = models.CharField(max_length=10, choices=TIPO_COICES, verbose_name="Tipo")
+
     categoria = models.ForeignKey(
         Categoria,
         on_delete=models.SET_NULL,
@@ -25,13 +30,10 @@ class Despesa(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor")
     data = models.DateField(verbose_name="Data")
     descricao = models.TextField(blank=True, verbose_name="Descrição")
-    """ shared_with = models.ManyToManyField(
-        User, related_name="despesas_partilhadas", blank=True
-    ) """
 
     class Meta:
-        verbose_name = "Despesa"
-        verbose_name_plural = "Despesas"
+        verbose_name = "Movimento"
+        verbose_name_plural = "Movimentos"
         ordering = ["-data"]
 
     def __str__(self):

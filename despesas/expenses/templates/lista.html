@@ -6,13 +6,16 @@
 {% block content %}
     <style>
     .despesas-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 0 1.5rem;
+        padding: 5px;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
     .header-section {
-        margin-bottom: 1.5rem;
+        margin-bottom: 0.2rem;
+        flex-shrink: 0;
     }
 
     .header-section h1 {
@@ -27,6 +30,11 @@
     .header-section h1 i {
         color: #667eea;
         font-size: 2.2rem;
+    }
+
+    .stats-row,
+    .total-card {
+        flex-shrink: 0;
     }
 
     .stats-row {
@@ -56,11 +64,10 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-weight: 600;
-        margin-bottom: 0.5rem;
     }
 
     .stat-value {
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #667eea;
     }
@@ -88,17 +95,20 @@
     }
 
     .table-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 0;
         background: white;
         border-radius: 18px;
         box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
         border: 1px solid rgba(102, 126, 234, 0.12);
-        overflow: hidden;
-        margin-bottom: 2rem;
-        display: flex;
-        flex-direction: column;
+        margin-bottom: 1rem;
     }
 
     .table-card-header {
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -106,7 +116,6 @@
         padding: 1.5rem 1.75rem;
         border-bottom: 1px solid #e2e8f0;
         background: #f8fbff;
-        flex-shrink: 0;
     }
 
     .table-card-header h2 {
@@ -117,17 +126,11 @@
         color: #2d3748;
     }
 
-    /* Garante que o scroll seja apenas na tabela */
-    .table-card {
-        overflow: hidden; /* Remove overflow da div pai */
-    }
-
     .table-body-scroll {
-        position: relative;
-        max-height: 320px; /* Altura máxima para 5 registros */
+        min-height: 0;
         overflow-y: auto;
-        overflow-x: hidden; /* Evita scroll horizontal na tabela */
-        min-height: 200px;
+        overflow-x: hidden;
+        height: 345px;
     }
 
     /* Estilo da barra de scroll */
@@ -393,16 +396,16 @@
             {% if despesas %}
                 <div class="stats-row">
                     <div class="stat-box">
-                        <div class="stat-label">
-                            <i class="fas fa-calculator"></i> Total de Despesas
-                        </div>
-                        <div class="stat-value">{{ total|format_currency_pt }}</div>
+                        <div class="stat-label">💸 Total Saídas</div>
+                        <div class="stat-value">{{ total_saidas|format_currency_pt }}</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-label">
-                            <i class="fas fa-list-ul"></i> Número de Registos
-                        </div>
-                        <div class="stat-value">{{ despesas|length }}</div>
+                        <div class="stat-label">💰 Total Entradas</div>
+                        <div class="stat-value">{{ total_entradas|format_currency_pt }}</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">📊 Saldo</div>
+                        <div class="stat-value">{{ saldo|format_currency_pt }}</div>
                     </div>
                 </div>
                 <div class="total-card">
@@ -414,12 +417,14 @@
                         <h2>
                             <i class="fas fa-table"></i> Histórico de Despesas
                         </h2>
+                        <a href="{% url 'resumo_mensal' %}" class="btn btn-primary">📅 Resumo Mensal</a>
                     </div>
                     <div class="table-body-scroll">
                         <table class="despesas-table">
                             <thead>
                                 <tr>
                                     <th>Data</th>
+                                    <th>Tipo</th>
                                     <th>Categoria</th>
                                     <th class="valor-col">Valor (€)</th>
                                     <th>Descrição</th>
@@ -432,20 +437,29 @@
                                     <tr>
                                         <td>{{ d.data|date:"d/m/Y" }}</td>
                                         <td>
+                                            {% if d.tipo == "entrada" %}
+                                                <span class="badge bg-success">Entrada</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Saída</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
                                             <span class="categoria-pill">{{ d.categoria }}</span>
                                         </td>
                                         <td class="valor-col">{{ d.valor|format_currency_pt }}</td>
                                         <td class="descricao-col">{{ d.descricao|truncatechars:80 }}</td>
                                         <td>{{ d.user.username }}</td>
                                         <td>
-                                            <div class="action-buttons">
-                                                <a href="{% url 'editar' d.id %}" class="btn btn-warning btn-sm">Editar</a>
-                                                <button type="button"
-                                                        class="btn btn-danger btn-sm delete-button"
-                                                        data-url="{% url 'apagar' d.id %}"
-                                                        data-despesa="{{ d.descricao|default:d|truncatechars:40 }}"
-                                                        data-valor="{{ d.valor|floatformat:2 }}">Apagar</button>
-                                            </div>
+                                            {% if d.user == user %}
+                                                <div class="action-buttons">
+                                                    <a href="{% url 'editar' d.id %}" class="btn btn-warning btn-sm">Editar</a>
+                                                    <button type="button"
+                                                            class="btn btn-danger btn-sm delete-button"
+                                                            data-url="{% url 'apagar' d.id %}"
+                                                            data-despesa="{{ d.descricao|default:d|truncatechars:40 }}"
+                                                            data-valor="{{ d.valor|floatformat:2 }}">Apagar</button>
+                                                </div>
+                                            {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}

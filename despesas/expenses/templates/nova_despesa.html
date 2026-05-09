@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}
-    Nova Despesa
+    Novo Movimento
 {% endblock title %}
 {% block content %}
     <style>
@@ -130,6 +130,20 @@
         border: 1px solid #cbd5e1;
     }
 
+    select.form-control {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+
+        height: 58px;
+
+        background: #f8fbff;
+
+        padding-right: 2.5rem;
+
+        cursor: pointer;
+    }
+
     @media (max-width: 640px) {
         .form-container {
             padding: 1.5rem 0.75rem 2rem;
@@ -154,11 +168,12 @@
 
     @media (min-width: 860px) {
         .form-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            align-items: start;
         }
 
         .descricao-group {
-            grid-column: span 3;
+            grid-column: span 4;
         }
 
         .form-actions {
@@ -177,16 +192,16 @@
                     <h1>
                         💰
                         {% if is_edit %}
-                            Editar Despesa
+                            Editar Movimento
                         {% else %}
-                            Nova Despesa
+                            Novo Movimento
                         {% endif %}
                     </h1>
                     <p>
                         {% if is_edit %}
-                            Atualize os detalhes da sua despesa.
+                            Atualize os detalhes do seu movimento.
                         {% else %}
-                            Registe uma nova despesa no sistema.
+                            Registe um novo movimento no sistema.
                         {% endif %}
                     </p>
                 </div>
@@ -198,6 +213,15 @@
                         </div>
                     {% endif %}
                     <div class="form-grid">
+                        <div class="form-group {% if form.tipo.errors %}field-with-error{% endif %}">
+                            <label for="{{ form.tipo.id_for_label }}">🔄 Tipo</label>
+                            {{ form.tipo }}
+                            {% if form.tipo.errors %}
+                                <div class="form-errors" style="margin-top: 5px;">
+                                    {% for error in form.tipo.errors %}<p>{{ error }}</p>{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
                         <div class="form-group {% if form.categoria.errors %}field-with-error{% endif %}">
                             <label for="{{ form.categoria.id_for_label }}">📂 Categoria</label>
                             {{ form.categoria }}
@@ -209,7 +233,6 @@
                                     {% for error in form.categoria.errors %}<p>{{ error }}</p>{% endfor %}
                                 </div>
                             {% endif %}
-                            {% if form.categoria.help_text %}<div class="help-text">{{ form.categoria.help_text|safe }}</div>{% endif %}
                         </div>
                         <div class="form-group {% if form.valor.errors %}field-with-error{% endif %}">
                             <label for="{{ form.valor.id_for_label }}">💰 Valor (€)</label>
@@ -219,7 +242,6 @@
                                     {% for error in form.valor.errors %}<p>{{ error }}</p>{% endfor %}
                                 </div>
                             {% endif %}
-                            {% if form.valor.help_text %}<div class="help-text">{{ form.valor.help_text|safe }}</div>{% endif %}
                         </div>
                         <div class="form-group data-group {% if form.data.errors %}field-with-error{% endif %}">
                             <label for="{{ form.data.id_for_label }}">📅 Data</label>
@@ -229,7 +251,6 @@
                                     {% for error in form.data.errors %}<p>{{ error }}</p>{% endfor %}
                                 </div>
                             {% endif %}
-                            {% if form.data.help_text %}<div class="help-text">{{ form.data.help_text|safe }}</div>{% endif %}
                         </div>
                         <div class="form-group descricao-group {% if form.descricao.errors %}field-with-error{% endif %}">
                             <label for="{{ form.descricao.id_for_label }}">📝 Descrição</label>
@@ -239,15 +260,14 @@
                                     {% for error in form.descricao.errors %}<p>{{ error }}</p>{% endfor %}
                                 </div>
                             {% endif %}
-                            {% if form.descricao.help_text %}<div class="help-text">{{ form.descricao.help_text|safe }}</div>{% endif %}
                         </div>
                     </div>
                     <div class="form-actions">
                         <button type="submit" class="btn btn-primary">
                             {% if is_edit %}
-                                💾 Atualizar Despesa
+                                💾 Atualizar Movimento
                             {% else %}
-                                💾 Guardar Despesa
+                                💾 Guardar Movimento
                             {% endif %}
                         </button>
                         <a href="{% url 'lista' %}" class="btn btn-secondary">❌ Cancelar</a>

@@ -44,6 +44,7 @@ urlpatterns = [
     path("nova/", views.nova_despesa, name="nova_despesa"),
     path("editar/<int:id>/", views.editar_despesa, name="editar"),
     path("apagar/<int:id>/", views.apagar_despesa, name="apagar"),
+    path("resumo-mensal/", views.resumo_mensal, name="resumo_mensal"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("configuracoes/", views.configuracoes, name="configuracoes"),
     # SESSION
