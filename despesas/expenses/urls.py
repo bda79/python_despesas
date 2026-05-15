@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
 from . import views
@@ -49,4 +49,5 @@ urlpatterns = [
     path("configuracoes/", views.configuracoes, name="configuracoes"),
     # SESSION
     path("keep_alive/", views.keep_alive, name="keep_alive"),
+    path("__reload__/", include("django_browser_reload.urls")),
 ]

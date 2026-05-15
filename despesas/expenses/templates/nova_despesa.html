@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/new.css' %}">
+    <link rel="stylesheet" href='{% static 'css/new.css' %}?v={% now "U" %}'>
 {% endblock extra_css %}
 {% block title %}
     Novo Movimento

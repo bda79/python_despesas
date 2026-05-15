@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/config.css' %}">
+    <link rel="stylesheet" href='{% static 'css/config.css' %}?v={% now "U" %}'>
 {% endblock extra_css %}
 {% block title %}
     Configurações

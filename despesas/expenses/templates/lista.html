@@ -2,7 +2,7 @@
 {% load static %}
 {% load custom_filters %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/lista.css' %}">
+    <link rel="stylesheet" href='{% static 'css/lista.css' %}?v={% now "U" %}'>
 {% endblock extra_css %}
 {% block title %}
     Minhas Despesas

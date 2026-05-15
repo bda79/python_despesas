@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static 'css/resumo.css' %}">
+    <link rel="stylesheet" href='{% static 'css/resumo.css' %}?v={% now "U" %}'>
 {% endblock extra_css %}
 {% load l10n %}
 {% load custom_filters %}

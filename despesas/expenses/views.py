@@ -342,4 +342,5 @@ def configuracoes(request):
 
 @login_required
 def keep_alive(request):
+    request.session.modified = True
     return JsonResponse({"status": "alive"})

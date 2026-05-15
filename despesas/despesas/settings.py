@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_auto_logout",
+    "django_browser_reload",
     "expenses",
 ]
 
@@ -51,7 +52,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "expenses.middleware.SessionIdleTimeout",
     "expenses.middleware.SlowRequestMiddleware",
 ]
 
@@ -71,6 +71,15 @@ TEMPLATES = [
         },
     },
 ]
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
+    },
+}
 
 WSGI_APPLICATION = "despesas.wsgi.application"
 
@@ -132,11 +141,7 @@ DECIMAL_SEPARATOR = ","
 THOUSAND_SEPARATOR = "."
 NUMBER_GROUPING = 3
 
-AUTO_LOGOUT = {
-    "IDLE_TIME": 300,  # 5 minutos
-}
-
-SESSION_COOKIE_AGE = 300  # 5 minutes
+SESSION_COOKIE_AGE = 1800  # 30 minutes
 SESSION_SAVE_EVERY_REQUEST = True
 
 LOGIN_URL = "login"
@@ -159,3 +164,4 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+STATIC_ROOT = BASE_DIR / "staticfiles"
