@@ -4,6 +4,7 @@
   flex-direction: column;
   overflow: hidden;
   min-height: 0;
+  height: calc(100vh - 120px);
 }
 
 /* ELEMENTOS FIXOS */
@@ -142,7 +143,7 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  height: 320px;
+  flex: 1;
 }
 
 /* Scroll bonito */

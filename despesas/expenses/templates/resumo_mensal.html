@@ -17,36 +17,41 @@
             </div>
             <div style="margin-bottom:20px; display:flex; gap:10px;">
                 {% if tem_partilha %}
-                    <a href="{% url 'resumo_mensal' %}?mes={{ mes }}&ano={{ ano }}"
-                       class="btn {% if not ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
-                        Minhas despesas
-                    </a>
-                    <a href="{% url 'resumo_mensal' %}?shared=1&mes={{ mes }}&ano={{ ano }}"
-                       class="btn {% if ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
-                        Ver em conjunto
-                    </a>
+                    <div style="display: flex;
+                                flex-direction: row;
+                                gap: 5px;
+                                align-items: center">
+                        <a href="{% url 'resumo_mensal' %}?mes={{ mes }}&ano={{ ano }}"
+                           class="btn {% if not ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
+                            Minhas despesas
+                        </a>
+                        <a href="{% url 'resumo_mensal' %}?shared=1&mes={{ mes }}&ano={{ ano }}"
+                           class="btn {% if ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
+                            Ver em conjunto
+                        </a>
+                    </div>
                 {% endif %}
-            </div>
-            <div class="filter-card">
-                <form method="get" class="filter-form">
-                    <div class="filter-group">
-                        <label>Mês</label>
-                        <input type="number"
-                               name="mes"
-                               value="{{ mes }}"
-                               min="1"
-                               max="12"
-                               class="form-control">
-                    </div>
-                    <div class="filter-group">
-                        <label>Ano</label>
-                        <input type="number"
-                               name="ano"
-                               value="{{ ano|unlocalize }}"
-                               class="form-control">
-                    </div>
-                    <button class="btn btn-primary">🔎 Filtrar</button>
-                </form>
+                <div class="filter-card">
+                    <form method="get" class="filter-form">
+                        <div class="filter-group">
+                            <label>Mês</label>
+                            <input type="number"
+                                   name="mes"
+                                   value="{{ mes }}"
+                                   min="1"
+                                   max="12"
+                                   class="form-control">
+                        </div>
+                        <div class="filter-group">
+                            <label>Ano</label>
+                            <input type="number"
+                                   name="ano"
+                                   value="{{ ano|unlocalize }}"
+                                   class="form-control">
+                        </div>
+                        <button class="btn btn-primary">🔎 Filtrar</button>
+                    </form>
+                </div>
             </div>
             <div class="stats-row">
                 <div class="stat-box">
