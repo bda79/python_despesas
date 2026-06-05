@@ -11,11 +11,11 @@
     <div class="fade-in">
         <div class="despesas-container">
             <div class="header-section">
-                <h1>
+                <h2>
                     <i class="fas fa-chart-pie"></i> Minhas Despesas
-                </h1>
+                </h2>
             </div>
-            <div style="margin-bottom:20px; display:flex; gap:10px;">
+            <div class="switch-buttons">
                 {% if tem_partilha %}
                     <a href="{% url 'lista' %}"
                        class="btn {% if not ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
@@ -38,7 +38,7 @@
                         <div class="stat-value">{{ total_entradas|format_currency_pt }}</div>
                     </div>
                     <div class="stat-box">
-                        <div class="stat-label">📊 Saldo</div>
+                        <div class="stat-label">📊 Saldo Final</div>
                         <div class="stat-value">{{ saldo|format_currency_pt }}</div>
                     </div>
                 </div>

@@ -15,12 +15,9 @@
                 <h1>📅 Resumo Mensal</h1>
                 <p>Consulte entradas, saídas e saldo do mês selecionado.</p>
             </div>
-            <div style="margin-bottom:20px; display:flex; gap:10px;">
+            <div class="resumo-actions-bar">
                 {% if tem_partilha %}
-                    <div style="display: flex;
-                                flex-direction: row;
-                                gap: 5px;
-                                align-items: center">
+                    <div class="resumo-actions-buttons">
                         <a href="{% url 'resumo_mensal' %}?mes={{ mes }}&ano={{ ano }}"
                            class="btn {% if not ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
                             Minhas despesas
@@ -31,7 +28,7 @@
                         </a>
                     </div>
                 {% endif %}
-                <div class="filter-card">
+                <div class="filter-card resumo-filter">
                     <form method="get" class="filter-form">
                         <div class="filter-group">
                             <label>Mês</label>

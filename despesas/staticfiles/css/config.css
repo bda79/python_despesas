@@ -1,201 +1,245 @@
+/* ==========================
+   LAYOUT BASE
+========================== */
+
 .config-container {
-        padding: 5px;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
+  padding: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
 
-    main .container {
-        display: flex;
-        flex-direction: column;
-    }
+/* evita conflito com base-m.css */
+main .container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
 
-    .header-section {
-        margin-bottom: 1.5rem;
-    }
+/* ==========================
+   HEADER
+========================== */
 
-    .header-section h1 {
-        font-size: 2rem;
-        color: #2d3748;
-        margin: 0 0 0.5rem 0;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
+.header-section {
+  margin-bottom: 1rem;
+}
 
-    .header-section h1 i {
-        color: #667eea;
-        font-size: 2.2rem;
-    }
+.header-section h1 {
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
 
-    .header-section p {
-        margin: 0;
-        color: #718096;
-        font-size: 1rem;
-    }
+.header-section h1 i {
+  color: #667eea;
+  font-size: 1.6rem;
+}
 
-    .stats-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
+.header-section p {
+  margin: 0;
+  color: #718096;
+  font-size: clamp(0.9rem, 1.2vw, 1rem);
+}
 
-    .stat-box {
-        background: white;
-        padding: 1rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border-left: 4px solid #667eea;
-        transition: all 0.3s ease;
-    }
+/* ==========================
+   STATS
+========================== */
 
-    .stat-box:hover {
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.15);
-        transform: translateY(-2px);
-    }
+.stats-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
 
-    .stat-label {
-        font-size: 0.85rem;
-        color: #718096;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        font-weight: 600;
-    }
+/* tablet+ */
+@media (min-width: 600px) {
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
-    .stat-value {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #667eea;
-        margin-top: 0.4rem;
-        word-break: break-word;
-    }
+/* desktop */
+@media (min-width: 992px) {
+  .stats-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 
-    .settings-card {
-        background: white;
-        border-radius: 18px;
-        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.12);
-        border: 1px solid rgba(102, 126, 234, 0.12);
-        overflow: hidden;
-    }
+.stat-box {
+  background: white;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-left: 4px solid #667eea;
+  transition: 0.2s ease;
+}
 
-    .settings-card-header {
-        padding: 1.5rem 1.75rem;
-        border-bottom: 1px solid #e2e8f0;
-        background: #f8fbff;
-    }
+.stat-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.15);
+}
 
-    .settings-card-header h2 {
-        margin: 0;
-        font-size: 1.1rem;
-        letter-spacing: 0.03em;
-        text-transform: uppercase;
-        color: #2d3748;
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-    }
+.stat-label {
+  font-size: 0.75rem;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
-    .settings-card-body {
-        padding: 2rem 1.75rem;
-    }
+.stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #667eea;
+  margin-top: 0.3rem;
+  word-break: break-word;
+}
 
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
+/* ==========================
+   CARD PRINCIPAL
+========================== */
 
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #334155;
-    }
+.settings-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.12);
+  overflow: hidden;
+}
 
-    .form-control,
-    input[type="email"],
-    input[type="text"] {
-        width: 100%;
-        padding: 0.95rem 1rem;
-        border-radius: 14px;
-        border: 1px solid #dbeafe;
-        background: #fff;
-        transition: all 0.2s ease;
-        font-size: 0.95rem;
-    }
+/* HEADER CARD */
+.settings-card-header {
+  padding: 1rem 1.25rem;
+  background: #f8fbff;
+  border-bottom: 1px solid #e2e8f0;
+}
 
-    .form-control:focus,
-    input[type="email"]:focus,
-    input[type="text"]:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
-    }
+.settings-card-header h2 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-    .form-errors {
-        margin-top: 0.5rem;
-        color: #dc2626;
-        font-size: 0.9rem;
-    }
+/* BODY CARD */
+.settings-card-body {
+  padding: 1.25rem;
+}
 
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        font-weight: 600;
-    }
+/* ==========================
+   FORM
+========================== */
 
-    .btn-primary {
-        background: #667eea;
-        color: white;
-        padding: 0.9rem 1.4rem;
-        border-radius: 999px;
-    }
+.form-group {
+  margin-bottom: 1.25rem;
+}
 
-    .btn-primary:hover {
-        background: #5a67d8;
-        transform: translateY(-1px);
-    }
+.form-group label {
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 0.4rem;
+  display: block;
+}
 
-    .btn-danger {
-        background: #f56565;
-        color: white;
-        padding: 0.9rem 1.4rem;
-        border-radius: 999px;
-    }
+.form-control,
+input[type="email"],
+input[type="text"] {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
+  font-size: 0.95rem;
+  transition: 0.2s ease;
+}
 
-    .btn-danger:hover {
-        background: #e53e3e;
-        transform: translateY(-1px);
-    }
+.form-control:focus,
+input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
 
-    .shared-box {
-        background: rgba(102, 126, 234, 0.06);
-        border: 1px solid rgba(102, 126, 234, 0.15);
-        border-radius: 16px;
-        padding: 1.25rem;
-        margin-bottom: 1.5rem;
-    }
+/* ==========================
+   SHARED BOX
+========================== */
 
-    .shared-box strong {
-        color: #4338ca;
-    }
+.shared-box {
+  background: rgba(102, 126, 234, 0.06);
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: 14px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
 
-    @media (max-width: 768px) {
-        .header-section h1 {
-            font-size: 1.5rem;
-        }
+/* ==========================
+   BOTÕES (override seguro)
+========================== */
 
-        .settings-card-body {
-            padding: 1.25rem;
-        }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  transition: 0.2s ease;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.9rem;
+}
 
-        .settings-card-header {
-            padding: 1.25rem;
-        }
-    }
+.btn-primary,
+.btn-danger {
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background: #667eea;
+  color: white;
+  border-radius: 999px;
+}
+
+.btn-primary:hover {
+  background: #5a67d8;
+}
+
+.btn-danger {
+  background: #f56565;
+  color: white;
+  border-radius: 999px;
+}
+
+.btn-danger:hover {
+  background: #e53e3e;
+}
+
+/* ==========================
+   MOBILE AJUSTES
+========================== */
+
+@media (max-width: 768px) {
+  .header-section h1 {
+    font-size: 1.3rem;
+  }
+
+  .settings-card-body {
+    padding: 1rem;
+  }
+
+  .settings-card-header {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 0.95rem;
+  }
+
+  .btn {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.8rem;
+  }
+}

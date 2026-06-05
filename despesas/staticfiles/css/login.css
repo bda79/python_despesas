@@ -138,3 +138,65 @@ main .container {
   color: #764ba2;
   text-decoration: underline;
 }
+
+main .container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ==========================
+   MOBILE FIXES
+========================== */
+@media (max-width: 768px) {
+  /* container deixa de ser fixo 450px */
+  .login-container {
+    width: 100% !important;
+    max-width: 420px;
+    margin: 15px auto !important;
+    padding: 22px !important;
+  }
+
+  /* título mais leve no mobile */
+  .login-container h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+
+  /* inputs mais confortáveis */
+  .form-group input {
+    font-size: 16px; /* evita zoom iOS */
+    padding: 14px;
+  }
+
+  /* botão melhor para toque */
+  .submit-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+
+  /* botão olho password alinhado */
+  .password-toggle button {
+    top: 40px;
+  }
+
+  /* texto inferior */
+  .info-text {
+    font-size: 13px;
+  }
+}
+
+/* ==========================
+   MOBILE PEQUENO (extra)
+========================== */
+@media (max-width: 420px) {
+  .login-container {
+    max-width: 100%;
+    padding: 18px !important;
+    border-radius: 10px;
+  }
+
+  .login-container h1 {
+    font-size: 20px;
+  }
+}
