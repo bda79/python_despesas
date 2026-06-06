@@ -38,6 +38,12 @@ main {
   padding: 0 15px;
 }
 
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
 /* ==========================
    NAVBAR
 ========================== */
@@ -235,6 +241,14 @@ footer p {
 
   .navbar-nav-right {
     justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  .empty-state {
+    padding: 20px 10px;
+  }
+
+  .empty-state h3 {
     font-size: 0.85rem;
   }
 }

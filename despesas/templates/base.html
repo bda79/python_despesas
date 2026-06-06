@@ -20,6 +20,7 @@
         <!-- Bootstrap JS -->
         <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
         <link rel='stylesheet' href='{% static 'css/base.css' %}?v={% now "U" %}'>
+        <link rel='stylesheet' href='{% static 'css/search.css' %}?v={% now "U" %}'>
         {% block extra_css %}
         {% endblock extra_css %}
     </head>
@@ -370,5 +371,6 @@
 
             });
         </script>
+        <script src="{% static 'js/search.js' %}?v={% now 'U' %}"></script>
     </body>
 </html>

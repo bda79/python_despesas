@@ -104,6 +104,18 @@
   text-decoration: underline;
 }
 
+.error-box {
+  background: #fee;
+  border: 1px solid #f44336;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.error-box p {
+  margin: 5px 0;
+}
 /* ==========================
    MOBILE
 ========================== */
@@ -135,6 +147,13 @@
 
   .info-text {
     font-size: 13px;
+  }
+
+  .error-box {
+    font-size: 0.9rem;
+    padding: 10px;
+    margin-bottom: 16px;
+    word-break: break-word;
   }
 }
 

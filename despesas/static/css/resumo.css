@@ -41,6 +41,38 @@
   font-size: 0.95rem;
 }
 
+.page-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.close-page-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.close-page-btn:hover {
+  background: #dc3545;
+  color: white;
+  border-color: #dc3545;
+  transform: scale(1.05);
+}
+
+.close-page-btn i {
+  font-size: 1rem;
+}
+
 /* ==========================
    ACTION BAR (TOOLBAR MODERNA)
 ========================== */
@@ -89,7 +121,7 @@
 
 .filter-form {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: end;
   flex-wrap: wrap;
 }
@@ -97,10 +129,10 @@
 .filter-group {
   display: flex;
   flex-direction: column;
-  font-size: 0.85rem;
-  gap: 4px;
-  flex: 1;
-  min-width: 120px;
+}
+
+.mobile-text {
+  display: none;
 }
 
 .filter-group input {
@@ -221,11 +253,25 @@
   color: #b91c1c;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 /* ==========================
    MOBILE FIRST (APP STYLE)
 ========================== */
 
 @media (max-width: 768px) {
+  .close-page-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .close-page-btn i {
+    font-size: 0.9rem;
+  }
   /* layout vertical */
   .resumo-actions-bar {
     flex-direction: column;
@@ -248,20 +294,6 @@
 
   /* filtro full width */
   .resumo-filter {
-    width: 100%;
-  }
-
-  .filter-form {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .filter-group {
-    min-width: 120px;
-  }
-
-  .filter-form .btn {
     width: 100%;
   }
 
@@ -332,6 +364,49 @@
   }
   .resumo-table td:nth-child(6)::before {
     content: "Criado por";
+  }
+
+  .filter-form {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .filter-group {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .filter-group label {
+    display: none;
+  }
+
+  .filter-group input {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.85rem;
+    height: 38px;
+    box-sizing: border-box;
+  }
+
+  .filter-btn {
+    flex: 0 0 auto;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .desktop-text {
+    display: none;
+  }
+
+  .mobile-text {
+    display: inline;
   }
 }
 

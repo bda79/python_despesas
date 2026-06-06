@@ -1,5 +1,6 @@
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from .forms import CustomSetPasswordForm
 
 from . import views
 
@@ -28,7 +29,8 @@ urlpatterns = [
     path(
         "reset/<uidb64>/<token>/",
         auth_views.PasswordResetConfirmView.as_view(
-            template_name="registration/password_reset_confirm.html"
+            template_name="registration/password_reset_confirm.html",
+            form_class=CustomSetPasswordForm,
         ),
         name="password_reset_confirm",
     ),
@@ -45,8 +47,10 @@ urlpatterns = [
     path("editar/<int:id>/", views.editar_despesa, name="editar"),
     path("apagar/<int:id>/", views.apagar_despesa, name="apagar"),
     path("resumo-mensal/", views.resumo_mensal, name="resumo_mensal"),
+    path("resumo-anual/", views.resumo_anual, name="resumo_anual"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("configuracoes/", views.configuracoes, name="configuracoes"),
+    path("api/despesas/", views.api_despesas, name="api_despesas"),
     # SESSION
     path("keep_alive/", views.keep_alive, name="keep_alive"),
     path("__reload__/", include("django_browser_reload.urls")),

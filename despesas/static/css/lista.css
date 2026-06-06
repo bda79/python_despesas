@@ -1,3 +1,7 @@
+/* ==========================
+   ANIMAÇÃO
+========================== */
+
 .fade-in {
   animation: fadeIn 0.4s ease;
 }
@@ -7,12 +11,15 @@
     opacity: 0;
     transform: translateY(10px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
+/* ==========================
+   CONTAINER
+========================== */
 
 .despesas-container {
   display: flex;
@@ -20,24 +27,38 @@
   gap: 20px;
 }
 
-.header-section,
-.table-card-header,
-.switch-buttons {
-  font-size: 1rem;
-}
+/* ==========================
+   HEADERS
+========================== */
 
 .header-section h2,
-.table-card-header h2,
-.switch-buttons .btn {
-  font-size: inherit;
-  margin: 0;
+.table-card-header h2 {
+  font-size: 1rem;
   font-weight: 600;
+  margin: 0;
 }
 
 .header-section i,
-.table-card-header i,
-.switch-buttons i {
+.table-card-header i {
   font-size: inherit;
+}
+
+/* ==========================
+   SWITCH BUTTONS (IGUAL HEADER ACTIONS)
+========================== */
+
+.switch-buttons,
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.switch-buttons .btn,
+.header-actions .btn {
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  white-space: nowrap;
 }
 
 /* ==========================
@@ -55,21 +76,21 @@
   padding: 12px;
   border-radius: 12px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  text-align: center;
 }
 
 .stat-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #666;
 }
 
 .stat-value {
   font-size: 1rem;
   font-weight: bold;
-  margin-top: 5px;
 }
 
 /* ==========================
-   CARD
+   TABLE CARD
 ========================== */
 
 .table-card {
@@ -80,11 +101,11 @@
 }
 
 .table-card-header {
-  padding: 20px;
+  padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 15px;
+  gap: 10px;
 }
 
 .table-body-scroll {
@@ -92,7 +113,7 @@
 }
 
 /* ==========================
-   TABLE
+   TABLE DESKTOP
 ========================== */
 
 .despesas-table {
@@ -102,12 +123,12 @@
 
 .despesas-table th {
   background: #f8fafc;
-  padding: 15px;
+  padding: 12px;
   text-align: left;
 }
 
 .despesas-table td {
-  padding: 15px;
+  padding: 12px;
   border-top: 1px solid #eee;
 }
 
@@ -120,29 +141,34 @@
   color: #2563eb;
   padding: 4px 10px;
   border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: contents;
-  align-items: center;
-  max-width: 130px;
-  line-height: 1.2;
-  text-align: center;
-  white-space: normal;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.switch-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  font-size: 0.75rem;
 }
 
 /* ==========================
-   MOBILE TABLE -> CARDS
+   ACTION BUTTONS (FIX IMPORTANTE)
+========================== */
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.action-buttons .btn {
+  flex: 1;
+  font-size: 0.75rem;
+  padding: 6px 8px;
+}
+
+.action-buttons .btn {
+  transition: all 0.15s ease;
+}
+
+.action-buttons .btn:active {
+  transform: scale(0.96);
+}
+
+/* ==========================
+   MOBILE
 ========================== */
 
 @media (max-width: 768px) {
@@ -150,14 +176,22 @@
     grid-template-columns: 1fr;
   }
 
-  .header-section h1 {
-    font-size: 1.5rem;
+  /* HEADER ACTIONS + SWITCH BUTTONS IGUAIS */
+  .switch-buttons .btn,
+  .header-actions .btn {
+    flex: 1;
+    text-align: center;
+    font-size: 0.8rem;
   }
 
   .table-card-header {
     flex-direction: column;
     align-items: stretch;
   }
+
+  /* ======================
+     TABLE → CARDS MOBILE
+  ====================== */
 
   .despesas-table,
   .despesas-table thead,
@@ -173,110 +207,90 @@
   }
 
   .despesas-table tr {
-    background: #fff;
-
-    border: none;
-
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
+    background: white;
     border-radius: 14px;
-
     margin-bottom: 12px;
-
-    padding: 14px;
+    padding: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
 
   .despesas-table td {
+    padding: 6px 0;
     font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
   }
 
   .despesas-table td::before {
-    font-weight: bold;
+    font-weight: 600;
     color: #666;
-    min-width: 110px;
-    padding-right: 5px;
   }
 
   .despesas-table td:nth-child(1)::before {
     content: "Data";
   }
-
   .despesas-table td:nth-child(2)::before {
     content: "Tipo";
   }
-
   .despesas-table td:nth-child(3)::before {
     content: "Categoria";
   }
-
   .despesas-table td:nth-child(4)::before {
     content: "Valor";
   }
-
   .despesas-table td:nth-child(5)::before {
     content: "Descrição";
   }
-
   .despesas-table td:nth-child(6)::before {
     content: "Criado por";
   }
-
   .despesas-table td:nth-child(7)::before {
     content: "Ações";
   }
 
+  /* ACTION BUTTONS MOBILE FIX */
+  .despesas-table td:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  /* label "Ações" fica à esquerda mais discreto */
+  .despesas-table td:last-child::before {
+    margin-right: 8px;
+    font-size: 0.75rem;
+    color: #666;
+    flex-shrink: 0;
+  }
+
   .action-buttons {
-    width: 100%;
+    display: flex;
     flex-direction: row;
+    gap: 6px;
+    flex: 1;
+    justify-content: flex-end;
   }
 
   .action-buttons .btn {
-    width: 100%;
-  }
-
-  .switch-buttons {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 15px;
-  }
-
-  .switch-buttons .btn {
-    flex: 1;
-  }
-  .stats-row {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-  }
-
-  .stat-box {
-    padding: 10px 6px;
-    text-align: center;
-  }
-
-  .stat-label {
-    font-size: 0.9rem;
-  }
-
-  .stat-value {
-    font-size: 0.9rem;
-    word-break: break-word;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    white-space: nowrap;
+    flex: unset;
   }
 }
 
 /* ==========================
-   SMALL PHONES
+   VERY SMALL SCREENS
 ========================== */
 
 @media (max-width: 480px) {
   .stat-value {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 
-  .btn {
-    width: 100%;
-  }
-
-  .header-section h1 {
-    font-size: 1.3rem;
+  .header-section h2 {
+    font-size: 1.1rem;
   }
 }

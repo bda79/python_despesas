@@ -47,8 +47,12 @@
                         <h2>
                             <i class="fas fa-table"></i> Histórico de Despesas
                         </h2>
-                        <a href="{% url 'resumo_mensal' %}" class="btn btn-primary">📅 Resumo Mensal</a>
+                        <div class="header-actions">
+                            <a href="{% url 'resumo_mensal' %}" class="btn btn-primary">📅 Resumo Mensal</a>
+                            <a href="{% url 'resumo_anual' %}" class="btn btn-secondary">📊 Resumo Anual</a>
+                        </div>
                     </div>
+                    {% include "includes/search_bar.html" %}
                     <div class="table-body-scroll">
                         <table class="despesas-table">
                             <thead>
@@ -124,38 +128,38 @@
                     </div>
                 </div>
                 <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    const modal = document.getElementById('delete-modal');
-                    const deleteForm = document.getElementById('delete-form');
-                    const modalMessage = document.getElementById('delete-modal-message');
-                    let deleteTargetUrl = null;
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const modal = document.getElementById('delete-modal');
+                        const deleteForm = document.getElementById('delete-form');
+                        const modalMessage = document.getElementById('delete-modal-message');
+                        let deleteTargetUrl = null;
 
-                    const deleteButtons = document.querySelectorAll('.delete-button');
-                    deleteButtons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            deleteTargetUrl = button.dataset.url;
-                            const descricao = button.dataset.despesa || 'esta despesa';
-                            const valor = button.dataset.valor ? ` (${button.dataset.valor} €)` : '';
-                            modalMessage.textContent = `Tem a certeza que deseja apagar ${descricao}${valor}? Esta ação não pode ser desfeita.`;
-                            deleteForm.action = deleteTargetUrl;
-                            modal.hidden = false;
+                        const deleteButtons = document.querySelectorAll('.delete-button');
+                        deleteButtons.forEach(button => {
+                            button.addEventListener('click', () => {
+                                deleteTargetUrl = button.dataset.url;
+                                const descricao = button.dataset.despesa || 'esta despesa';
+                                const valor = button.dataset.valor ? ` (${button.dataset.valor} €)` : '';
+                                modalMessage.textContent = `Tem a certeza que deseja apagar ${descricao}${valor}? Esta ação não pode ser desfeita.`;
+                                deleteForm.action = deleteTargetUrl;
+                                modal.hidden = false;
+                            });
+                        });
+
+                        document.getElementById('delete-modal-cancel').addEventListener('click', () => {
+                            modal.hidden = true;
+                        });
+
+                        document.getElementById('delete-modal-confirm').addEventListener('click', () => {
+                            deleteForm.submit();
+                        });
+
+                        modal.addEventListener('click', (event) => {
+                            if (event.target === modal) {
+                                modal.hidden = true;
+                            }
                         });
                     });
-
-                    document.getElementById('delete-modal-cancel').addEventListener('click', () => {
-                        modal.hidden = true;
-                    });
-
-                    document.getElementById('delete-modal-confirm').addEventListener('click', () => {
-                        deleteForm.submit();
-                    });
-
-                    modal.addEventListener('click', (event) => {
-                        if (event.target === modal) {
-                            modal.hidden = true;
-                        }
-                    });
-                });
                 </script>
             {% endif %}
         </div>

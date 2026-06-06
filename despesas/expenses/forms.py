@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.hashers import check_password
+from django.core.exceptions import ValidationError
 from .models import Despesa, Categoria
 
 
@@ -124,3 +127,17 @@ class CompartilharForm(forms.Form):
             }
         ),
     )
+
+
+class CustomSetPasswordForm(SetPasswordForm):
+
+    def clean_new_password1(self):
+        password = self.cleaned_data.get("new_password1")
+
+        # Impede reutilizar a password atual
+        if check_password(password, self.user.password):
+            raise ValidationError(
+                "A nova password não pode ser igual à password anterior."
+            )
+
+        return password

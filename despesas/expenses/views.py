@@ -239,6 +239,64 @@ def resumo_mensal(request):
 
 
 @login_required
+def resumo_anual(request):
+
+    hoje = timezone.now()
+
+    ano = request.GET.get("ano")
+
+    try:
+        ano = int(str(ano).replace(".", "")) if ano else hoje.year
+    except ValueError:
+        ano = hoje.year
+
+    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
+
+    tem_partilha = compartilhamento is not None
+
+    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
+
+    if request.GET.get("shared") == "1" and not tem_partilha:
+        return redirect("resumo_anual")
+
+    if ver_conjunto:
+
+        movimentos = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner),
+            data__year=ano,
+        ).order_by("-data")
+
+    else:
+
+        movimentos = Despesa.objects.filter(
+            user=request.user,
+            data__year=ano,
+        ).order_by("-data")
+
+    entradas = (
+        movimentos.filter(tipo="entrada").aggregate(total=Sum("valor"))["total"] or 0
+    )
+
+    saidas = movimentos.filter(tipo="saida").aggregate(total=Sum("valor"))["total"] or 0
+
+    saldo = entradas - saidas
+
+    return render(
+        request,
+        "resumo_anual.html",
+        {
+            "movimentos": movimentos,
+            "entradas": entradas,
+            "saidas": saidas,
+            "saldo": saldo,
+            "ano": ano,
+            "tem_partilha": tem_partilha,
+            "ver_conjunto": ver_conjunto,
+        },
+    )
+
+
+@login_required
 def dashboard(request):
 
     compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
@@ -344,3 +402,55 @@ def configuracoes(request):
 def keep_alive(request):
     request.session.modified = True
     return JsonResponse({"status": "alive"})
+
+
+@login_required
+def api_despesas(request):
+
+    query = request.GET.get("q", "").strip()
+    categoria = request.GET.get("categoria", "").strip()
+
+    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
+    tem_partilha = compartilhamento is not None
+    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
+
+    if ver_conjunto:
+        qs = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner)
+        )
+    else:
+        qs = Despesa.objects.filter(user=request.user)
+
+    if query:
+        qs = qs.filter(
+            Q(descricao__icontains=query) | Q(categoria__nome__icontains=query)
+        )
+
+    if categoria:
+        qs = qs.filter(categoria__nome__icontains=categoria)
+
+    qs = qs.order_by("-data")[:200]
+
+    data = list(
+        qs.values(
+            "id",
+            "descricao",
+            "valor",
+            "tipo",
+            "categoria__nome",
+            "data",
+            "user__username",
+        )
+    )
+
+    return JsonResponse({"count": len(data), "results": data})
+
+
+@login_required
+def api_categorias(request):
+
+    term = request.GET.get("q", "")
+
+    categorias = Categoria.objects.filter(nome__icontains=term).values("nome")[:8]
+
+    return JsonResponse(list(categorias), safe=False)

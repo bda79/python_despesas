@@ -1,0 +1,45 @@
+/* ================= SEARCH BAR ================= */
+
+.search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.search-input {
+  font-size: 0.9rem;
+  padding: 10px;
+}
+
+.search-info {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* sugestões */
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.suggestion-item {
+  background: #eef6ff;
+  color: #2563eb;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background: #dbeafe;
+}
+
+@media (max-width: 768px) {
+  .search-input {
+    font-size: 0.85rem;
+  }
+}

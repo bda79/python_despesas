@@ -6,7 +6,7 @@
 {% load l10n %}
 {% load custom_filters %}
 {% block title %}
-    Resumo Mensal
+    Resumo Anual
 {% endblock title %}
 {% block content %}
     <div class="fade-in">
@@ -20,16 +20,16 @@
                         <i class="fas fa-times"></i>
                     </a>
                 </div>
-                <p>Consulte entradas, saídas e saldo do mês selecionado.</p>
+                <p>Consulte entradas, saídas e saldo do ano selecionado.</p>
             </div>
             <div class="resumo-actions-bar">
                 {% if tem_partilha %}
                     <div class="resumo-actions-buttons">
-                        <a href="{% url 'resumo_mensal' %}?mes={{ mes }}&ano={{ ano }}"
+                        <a href="{% url 'resumo_anual' %}?ano={{ ano }}"
                            class="btn {% if not ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
                             Minhas despesas
                         </a>
-                        <a href="{% url 'resumo_mensal' %}?shared=1&mes={{ mes }}&ano={{ ano }}"
+                        <a href="{% url 'resumo_anual' %}?shared=1&ano={{ ano }}"
                            class="btn {% if ver_conjunto %}btn-primary{% else %}btn-secondary{% endif %}">
                             Ver em conjunto
                         </a>
@@ -37,16 +37,6 @@
                 {% endif %}
                 <div class="filter-card resumo-filter">
                     <form method="get" class="filter-form">
-                        <div class="filter-group">
-                            <label>Mês</label>
-                            <input type="number"
-                                   name="mes"
-                                   value="{{ mes }}"
-                                   min="1"
-                                   max="12"
-                                   placeholder="Mês"
-                                   class="form-control">
-                        </div>
                         <div class="filter-group">
                             <label>Ano</label>
                             <input type="number"
@@ -56,10 +46,7 @@
                                    class="form-control">
                         </div>
                         {% if ver_conjunto %}<input type="hidden" name="shared" value="1">{% endif %}
-                        <button class="btn btn-primary filter-btn" type="submit">
-                            <span class="desktop-text">🔎 Filtrar</span>
-                            <span class="mobile-text">🔎</span>
-                        </button>
+                        <button class="btn btn-primary">🔎 Filtrar</button>
                     </form>
                 </div>
             </div>
@@ -79,7 +66,7 @@
             </div>
             <div class="table-card">
                 <div class="table-header">
-                    <h2>📋 Movimentos do Mês</h2>
+                    <h2>📋 Movimentos do Ano</h2>
                 </div>
                 {% if movimentos %}
                     {% include "includes/search_bar.html" %}
