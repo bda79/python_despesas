@@ -39,6 +39,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:62896",
 ]
 
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+]
+
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
