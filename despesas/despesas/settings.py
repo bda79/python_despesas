@@ -32,6 +32,7 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
+    "http://localhost:62896",
 ]
 
 SECURE_PROXY_SSL_HEADER = (
@@ -59,12 +60,14 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_auto_logout",
     "django_browser_reload",
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "expenses",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
