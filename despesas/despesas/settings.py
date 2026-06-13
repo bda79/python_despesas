@@ -35,6 +35,10 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:62896",
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:62896",
+]
+
 SECURE_PROXY_SSL_HEADER = (
     "HTTP_X_FORWARDED_PROTO",
     "https",
