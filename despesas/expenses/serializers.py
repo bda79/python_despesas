@@ -20,6 +20,9 @@ class DespesaSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
+    # pode aceitar string ou id
+    categoria_input = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = Despesa
         fields = [
@@ -27,11 +30,27 @@ class DespesaSerializer(serializers.ModelSerializer):
             "tipo",
             "categoria",
             "categoria_nome",
+            "categoria_input",
             "valor",
             "data",
             "descricao",
             "user",
         ]
+
+    def create(self, validated_data):
+        categoria_input = validated_data.pop("categoria_input", None)
+        user = self.context["request"].user
+
+        # se veio texto → cria ou obtém categoria
+        if categoria_input:
+            categoria, _ = Categoria.objects.get_or_create(
+                nome__iexact=categoria_input,
+                defaults={"nome": categoria_input},
+            )
+            validated_data["categoria"] = categoria
+
+        validated_data["user"] = user
+        return super().create(validated_data)
 
 
 class CompartilhamentoSerializer(serializers.ModelSerializer):
