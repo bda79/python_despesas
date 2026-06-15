@@ -26,7 +26,7 @@ from .serializers import (
 )
 
 
-class CategoriaListAPIView(generics.ListAPIView):
+class CategoriaListAPIView(generics.ListCreateAPIView):
     queryset = Categoria.objects.all()
     serializer_class = CategoriaSerializer
     permission_classes = [IsAuthenticated]
