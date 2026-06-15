@@ -51,16 +51,6 @@ class DespesaListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = DespesaSerializer
     permission_classes = [IsAuthenticated]
 
-    # 🔥 DEBUG TEMPORÁRIO
-    def list(self, request, *args, **kwargs):
-        print("========== DEBUG API ==========")
-        print("USER:", request.user)
-        print("AUTH:", request.auth)
-        print("AUTH HEADER:", request.META.get("HTTP_AUTHORIZATION"))
-        print("===============================")
-
-        return super().list(request, *args, **kwargs)
-
     def get_queryset(self):
 
         user = self.request.user
