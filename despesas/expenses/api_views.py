@@ -314,19 +314,25 @@ class PasswordResetAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        try:
+            email = request.data.get("email")
 
-        email = request.data.get("email")
+            if not email:
+                return Response({"error": "Email obrigatório"}, status=400)
 
-        form = PasswordResetForm({"email": email})
+            form = PasswordResetForm({"email": email})
 
-        if form.is_valid():
+            if form.is_valid():
+                form.save(
+                    request=request,
+                    use_https=True,
+                )
 
-            form.save(
-                request=request,
-                use_https=True,
-            )
+            return Response({"message": "Se o email existir, receberá instruções."})
 
-        return Response({"message": "Se o email existir, receberá instruções."})
+        except Exception as e:
+            print("PASSWORD RESET ERROR:", e)
+            return Response({"error": "Erro interno"}, status=500)
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
