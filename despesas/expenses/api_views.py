@@ -294,11 +294,17 @@ class RegisterAPIView(APIView):
         if serializer.is_valid():
             user = serializer.save()
 
+            refresh = RefreshToken.for_user(user)
+
             return Response(
                 {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": user.email,
+                    },
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
                 },
                 status=201,
             )
@@ -307,7 +313,7 @@ class RegisterAPIView(APIView):
 
 
 class RequestPasswordResetAPIView(APIView):
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     def post(self, request):
         email = request.data.get("email")
@@ -324,11 +330,11 @@ class RequestPasswordResetAPIView(APIView):
 
 
 class ConfirmPasswordResetAPIView(APIView):
-    permission_classes = []
+    permission_classes = [AllowAny]
 
     def post(self, request):
         token_value = request.data.get("token")
-        new_password = request.data.get("password")
+        password = request.data.get("password")
 
         token = PasswordResetToken.objects.filter(token=token_value, used=False).first()
 
@@ -336,7 +342,7 @@ class ConfirmPasswordResetAPIView(APIView):
             return Response({"error": "Token inválido"}, status=400)
 
         user = token.user
-        user.password = make_password(new_password)
+        user.password = make_password(password)
         user.save()
 
         token.used = True
@@ -364,6 +370,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
+    permission_classes = [AllowAny]
+
     serializer_class = CustomTokenObtainPairSerializer
 
 
