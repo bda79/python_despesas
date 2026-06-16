@@ -21,6 +21,8 @@ from .serializers import (
     RegisterSerializer,
 )
 
+# from .services.email_service import send_password_reset_email
+
 
 class CategoriaListAPIView(generics.ListCreateAPIView):
     queryset = Categoria.objects.all()
@@ -326,7 +328,19 @@ class RequestPasswordResetAPIView(APIView):
 
         token = PasswordResetToken.objects.create(user=user)
 
-        return Response({"message": "OK", "token": str(token.token)})
+        try:
+            # Futuro Resend
+            # send_password_reset_email(user.email, str(token.token))
+            return Response(
+                {
+                    "message": "OK",
+                    "token": str(token.token),
+                }
+            )
+        except Exception as e:
+            print("EMAIL ERROR:", e)
+
+        # return Response({"message": "Se o email existir, foi enviado link."})
 
 
 class ConfirmPasswordResetAPIView(APIView):
