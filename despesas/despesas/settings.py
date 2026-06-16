@@ -14,6 +14,7 @@ from pathlib import Path
 from decouple import config
 import dj_database_url
 from datetime import timedelta
+from expenses.create_admin import create_admin
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -216,3 +217,5 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+create_admin()
