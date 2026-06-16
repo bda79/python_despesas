@@ -5,9 +5,7 @@ from django.contrib.auth.hashers import make_password
 def reset_admin_password(apps, schema_editor):
     User = apps.get_model("auth", "User")
 
-    User.objects.filter(username="admin").update(
-        password=make_password("NovaPassword123!")
-    )
+    User.objects.filter(username="admin").update(password=make_password("admin_1979!"))
 
 
 class Migration(migrations.Migration):
