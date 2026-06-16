@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -63,4 +65,16 @@ class Compartilhamento(models.Model):
         return f"{self.shared_user} pode ver despesas de {self.owner}"
 
 
-# Create your models here.
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        from datetime import timedelta
+        from django.utils import timezone
+
+        return not self.used and self.created_at > timezone.now() - timedelta(
+            minutes=30
+        )

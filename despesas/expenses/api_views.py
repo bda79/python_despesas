@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.hashers import make_password
 from django.db.models import Sum, FloatField, Q
 from django.db.models.functions import Cast
 from django.utils import timezone
@@ -12,11 +12,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import (
-    Categoria,
-    Compartilhamento,
-    Despesa,
-)
+from .models import Categoria, Compartilhamento, Despesa, PasswordResetToken
 
 from .serializers import (
     CategoriaSerializer,
@@ -310,29 +306,43 @@ class RegisterAPIView(APIView):
         return Response(serializer.errors, status=400)
 
 
-class PasswordResetAPIView(APIView):
-    permission_classes = [AllowAny]
+class RequestPasswordResetAPIView(APIView):
+    permission_classes = []
 
     def post(self, request):
-        try:
-            email = request.data.get("email")
+        email = request.data.get("email")
 
-            if not email:
-                return Response({"error": "Email obrigatório"}, status=400)
+        user = User.objects.filter(email=email).first()
 
-            form = PasswordResetForm({"email": email})
+        # SEMPRE resposta igual (segurança)
+        if not user:
+            return Response({"message": "Se o email existir, foi enviado link."})
 
-            if form.is_valid():
-                form.save(
-                    request=request,
-                    use_https=True,
-                )
+        token = PasswordResetToken.objects.create(user=user)
 
-            return Response({"message": "Se o email existir, receberá instruções."})
+        return Response({"message": "OK", "token": str(token.token)})
 
-        except Exception as e:
-            print("PASSWORD RESET ERROR:", e)
-            return Response({"error": "Erro interno"}, status=500)
+
+class ConfirmPasswordResetAPIView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        token_value = request.data.get("token")
+        new_password = request.data.get("password")
+
+        token = PasswordResetToken.objects.filter(token=token_value, used=False).first()
+
+        if not token or not token.is_valid():
+            return Response({"error": "Token inválido"}, status=400)
+
+        user = token.user
+        user.password = make_password(new_password)
+        user.save()
+
+        token.used = True
+        token.save()
+
+        return Response({"message": "Password alterada com sucesso"})
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):

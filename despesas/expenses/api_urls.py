@@ -11,11 +11,12 @@ from .api_views import (
     DespesaDetailAPIView,
     DashboardAPIView,
     RegisterAPIView,
+    RequestPasswordResetAPIView,
     ResumoMensalAPIView,
     ResumoAnualAPIView,
     CompartilhamentoAPIView,
     CategoriaListAPIView,
-    PasswordResetAPIView,
+    ConfirmPasswordResetAPIView,
     CustomTokenObtainPairView,
 )
 
@@ -61,10 +62,8 @@ urlpatterns = [
         "register/",
         RegisterAPIView.as_view(),
     ),
-    path(
-        "password-reset/",
-        PasswordResetAPIView.as_view(),
-    ),
+    path("password-reset/request/", RequestPasswordResetAPIView.as_view()),
+    path("password-reset/confirm/", ConfirmPasswordResetAPIView.as_view()),
     path("logout/", LogoutAPIView.as_view()),
     path(
         "me/",
