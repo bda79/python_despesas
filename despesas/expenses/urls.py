@@ -54,4 +54,5 @@ urlpatterns = [
     # SESSION
     path("keep_alive/", views.keep_alive, name="keep_alive"),
     path("__reload__/", include("django_browser_reload.urls")),
+    path("smtp-test/", views.smtp_test),
 ]

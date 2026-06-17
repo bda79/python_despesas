@@ -10,6 +10,8 @@ from django.db.models.functions import Cast
 from django.utils import timezone
 from .forms import DespesaForm, RegisterForm, CompartilharForm
 from .models import Despesa, Categoria, Compartilhamento
+import socket
+from django.http import HttpResponse
 
 
 def login_view(request):
@@ -454,3 +456,11 @@ def api_categorias(request):
     categorias = Categoria.objects.filter(nome__icontains=term).values("nome")[:8]
 
     return JsonResponse(list(categorias), safe=False)
+
+
+def smtp_test(request):
+    try:
+        socket.create_connection(("smtp.gmail.com", 587), timeout=10)
+        return HttpResponse("SMTP CONNECT OK")
+    except Exception as e:
+        return HttpResponse(f"ERRO SMTP: {e}")
