@@ -5,7 +5,7 @@ from django.db.models import Sum, FloatField, Q
 from django.db.models.functions import Cast
 from django.utils import timezone
 
-from rest_framework import generics, status
+from rest_framework import generics
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from decouple import config
+import uuid
 
 from .models import Categoria, Compartilhamento, Despesa, PasswordResetToken
 
@@ -369,39 +370,34 @@ class ConfirmPasswordResetAPIView(APIView):
 
             if not token_value or not password:
                 return Response(
-                    {"message": "Token e password são obrigatórios"},
-                    status=status.HTTP_400_BAD_REQUEST,
+                    {"message": "Token e password são obrigatórios"}, status=400
                 )
 
+            # VALIDAR UUID ANTES DO QUERY
+            try:
+                token_uuid = uuid.UUID(token_value)
+            except ValueError:
+                return Response({"message": "Token inválido"}, status=400)
+
             token = PasswordResetToken.objects.filter(
-                token=token_value, used=False
+                token=token_uuid, used=False
             ).first()
 
             if not token or not token.is_valid():
-                return Response(
-                    {"message": "Token inválido ou expirado"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return Response({"message": "Token inválido ou expirado"}, status=400)
 
             user = token.user
-
-            # forma correta Django
             user.set_password(password)
             user.save()
 
             token.used = True
             token.save()
 
-            return Response(
-                {"message": "Password alterada com sucesso"}, status=status.HTTP_200_OK
-            )
+            return Response({"message": "Password alterada com sucesso"}, status=200)
 
         except Exception as e:
             print("CONFIRM PASSWORD RESET ERROR:", e)
-            return Response(
-                {"message": "Erro interno no servidor"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"message": "Erro interno no servidor"}, status=500)
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
