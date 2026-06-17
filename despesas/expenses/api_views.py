@@ -12,6 +12,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from decouple import config
+
 from .models import Categoria, Compartilhamento, Despesa, PasswordResetToken
 
 from .serializers import (
@@ -21,7 +23,7 @@ from .serializers import (
     RegisterSerializer,
 )
 
-# from .services.email_service import send_password_reset_email
+from .services.email_service import send_password_reset_email
 
 
 class CategoriaListAPIView(generics.ListCreateAPIView):
@@ -326,21 +328,20 @@ class RequestPasswordResetAPIView(APIView):
         if not user:
             return Response({"message": "Se o email existir, foi enviado link."})
 
+        PasswordResetToken.objects.filter(
+            user=user,
+            used=False,
+        ).delete()
+
         token = PasswordResetToken.objects.create(user=user)
+        reset_link = f"{config('FRONTEND_URL')}/reset-password?token={str(token.token)}"
 
         try:
-            # Futuro Resend
-            # send_password_reset_email(user.email, str(token.token))
-            return Response(
-                {
-                    "message": "OK",
-                    "token": str(token.token),
-                }
-            )
+            send_password_reset_email(email, reset_link)
         except Exception as e:
             print("EMAIL ERROR:", e)
 
-        # return Response({"message": "Se o email existir, foi enviado link."})
+        return Response({"message": "Se o email existir, foi enviado link."})
 
 
 class ConfirmPasswordResetAPIView(APIView):
