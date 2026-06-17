@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
+
+# from django.contrib.auth.hashers import make_password
 from django.db.models import Sum, FloatField, Q
 from django.db.models.functions import Cast
 from django.utils import timezone
 
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -292,6 +293,15 @@ class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        username = request.data.get("username")
+        email = request.data.get("email")
+
+        # validações manuais antes do serializer
+        if User.objects.filter(username=username).exists():
+            return Response({"message": "Username já existe"}, status=400)
+
+        if User.objects.filter(email=email).exists():
+            return Response({"message": "Email já está em uso"}, status=400)
 
         serializer = RegisterSerializer(data=request.data)
 
@@ -302,6 +312,7 @@ class RegisterAPIView(APIView):
 
             return Response(
                 {
+                    "message": "Conta criada com sucesso",
                     "user": {
                         "id": user.id,
                         "username": user.username,
@@ -313,19 +324,21 @@ class RegisterAPIView(APIView):
                 status=201,
             )
 
-        return Response(serializer.errors, status=400)
+        return Response(
+            {"message": "Erro no registo", "errors": serializer.errors}, status=400
+        )
 
 
 class RequestPasswordResetAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        try:
-            email = request.data.get("email")
+        email = request.data.get("email")
 
+        try:
             user = User.objects.filter(email=email).first()
 
-            # SEMPRE resposta igual (segurança)
+            # sempre resposta igual (segurança)
             if not user:
                 return Response({"message": "Se o email existir, foi enviado link."})
 
@@ -335,11 +348,11 @@ class RequestPasswordResetAPIView(APIView):
             ).delete()
 
             token = PasswordResetToken.objects.create(user=user)
-            reset_link = (
-                f"{config('FRONTEND_URL')}/reset-password?token={str(token.token)}"
-            )
+
+            reset_link = f"{config('FRONTEND_URL')}/reset-password?token={token.token}"
 
             send_password_reset_email(email, reset_link)
+
         except Exception as e:
             print("EMAIL ERROR:", e)
 
@@ -350,22 +363,45 @@ class ConfirmPasswordResetAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        token_value = request.data.get("token")
-        password = request.data.get("password")
+        try:
+            token_value = request.data.get("token")
+            password = request.data.get("password")
 
-        token = PasswordResetToken.objects.filter(token=token_value, used=False).first()
+            if not token_value or not password:
+                return Response(
+                    {"message": "Token e password são obrigatórios"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-        if not token or not token.is_valid():
-            return Response({"error": "Token inválido"}, status=400)
+            token = PasswordResetToken.objects.filter(
+                token=token_value, used=False
+            ).first()
 
-        user = token.user
-        user.password = make_password(password)
-        user.save()
+            if not token or not token.is_valid():
+                return Response(
+                    {"message": "Token inválido ou expirado"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
-        token.used = True
-        token.save()
+            user = token.user
 
-        return Response({"message": "Password alterada com sucesso"})
+            # forma correta Django
+            user.set_password(password)
+            user.save()
+
+            token.used = True
+            token.save()
+
+            return Response(
+                {"message": "Password alterada com sucesso"}, status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            print("CONFIRM PASSWORD RESET ERROR:", e)
+            return Response(
+                {"message": "Erro interno no servidor"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -398,7 +434,10 @@ class LogoutAPIView(APIView):
     def post(self, request):
 
         try:
-            refresh_token = request.data["refresh"]
+            refresh_token = request.data.get("refresh")
+
+            if not refresh_token:
+                return Response({"message": "Refresh token obrigatório"}, status=400)
 
             token = RefreshToken(refresh_token)
             token.blacklist()
