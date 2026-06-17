@@ -48,10 +48,10 @@ SECURE_PROXY_SSL_HEADER = (
     "https",
 )
 
-SECURE_SSL_REDIRECT = not DEBUG
+SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=True, cast=bool)
 
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=True, cast=bool)
+CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=True, cast=bool)
 
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
+    "anymail",
     "expenses",
 ]
 
@@ -201,22 +202,28 @@ LOGOUT_REDIRECT_URL = "/login/"
 
 # NOTA: Para teste no console apenas EMAIL_BACKEND os outros ficam comentado.
 # Configure your email settings for production use
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_TIMEOUT = 40
+
 if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     EMAIL_HOST = "smtp.gmail.com"
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
     EMAIL_HOST_USER = config("EMAIL_HOST_USER")
     EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
     SERVER_EMAIL = EMAIL_HOST_USER
-else:
-    EMAIL_HOST = config("EMAIL_HOST_MAILJET")
-    EMAIL_HOST_USER = config("EMAIL_HOST_USER_MAILJET")
-    EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD_MAILJET")
-    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 
-EMAIL_TIMEOUT = 30
+else:
+    EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
+
+    ANYMAIL = {
+        "MAILJET_API_KEY": config("MAILJET_API_KEY"),
+        "MAILJET_SECRET_KEY": config("MAILJET_SECRET_KEY"),
+    }
+
+    DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 FRONTEND_URL = config("FRONTEND_URL")
 DOMAIN_NAME = config("DOMAIN_NAME")
