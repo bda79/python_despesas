@@ -201,12 +201,12 @@ LOGOUT_REDIRECT_URL = "/login/"
 
 # NOTA: Para teste no console apenas EMAIL_BACKEND os outros ficam comentado.
 # Configure your email settings for production use
-# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_HOST = "smtp.gmail.com"
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = config("EMAIL_HOST_USER")
-# EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = config("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 RESEND_API_KEY = config("RESEND_API_KEY")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 FRONTEND_URL = config("FRONTEND_URL")
