@@ -320,23 +320,25 @@ class RequestPasswordResetAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        email = request.data.get("email")
-
-        user = User.objects.filter(email=email).first()
-
-        # SEMPRE resposta igual (segurança)
-        if not user:
-            return Response({"message": "Se o email existir, foi enviado link."})
-
-        PasswordResetToken.objects.filter(
-            user=user,
-            used=False,
-        ).delete()
-
-        token = PasswordResetToken.objects.create(user=user)
-        reset_link = f"{config('FRONTEND_URL')}/reset-password?token={str(token.token)}"
-
         try:
+            email = request.data.get("email")
+
+            user = User.objects.filter(email=email).first()
+
+            # SEMPRE resposta igual (segurança)
+            if not user:
+                return Response({"message": "Se o email existir, foi enviado link."})
+
+            PasswordResetToken.objects.filter(
+                user=user,
+                used=False,
+            ).delete()
+
+            token = PasswordResetToken.objects.create(user=user)
+            reset_link = (
+                f"{config('FRONTEND_URL')}/reset-password?token={str(token.token)}"
+            )
+
             send_password_reset_email(email, reset_link)
         except Exception as e:
             print("EMAIL ERROR:", e)
