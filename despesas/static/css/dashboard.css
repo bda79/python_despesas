@@ -1,111 +1,404 @@
-/* ==========================
-   DASHBOARD - BASE
-========================== */
+/* ========== Dashboard Corporativo - Modern Design ========== */
 
-.container-dash {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 18px;
+:root {
+    --primary: #2c3e50;
+    --secondary: #3498db;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --danger: #e74c3c;
+    --info: #16a085;
+    --light: #ecf0f1;
+    --dark: #2c3e50;
+    --gray-light: #f5f7fa;
+    --gray-medium: #bdc3c7;
+    --white: #ffffff;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
 }
 
-/* Título */
-.container-dash h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-weight: 600;
+/* ========== Main Container ========== */
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 16px;
 }
 
-/* ==========================
-   CARD PRINCIPAL
-========================== */
-
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
-  text-align: center;
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
-.card h4 {
-  margin-bottom: 5px;
-  font-weight: 500;
-  color: #4a5568;
+.dashboard-header h2 {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0;
 }
 
-.card span {
-  font-size: 28px;
-  font-weight: 700;
-  color: #2b6cb0;
+.filter-section {
+    display: flex;
+    gap: 12px;
 }
 
-/* ==========================
-   BOTÕES
-========================== */
-
-.container-dash .btn {
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-size: 0.9rem;
+.toggle-group {
+    display: flex;
+    gap: 8px;
+    background: var(--light);
+    padding: 4px;
+    border-radius: 6px;
 }
 
-/* grupo de botões */
-.container-dash > div[style] {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 15px;
+.toggle-group .btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-/* ==========================
-   GRÁFICO
-========================== */
+/* ========== KPI Cards Section ========== */
+.kpi-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.kpi-card {
+    background: var(--white);
+    border-left: 4px solid var(--secondary);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.kpi-card:nth-child(2) {
+    border-left-color: var(--danger);
+}
+
+.kpi-card:nth-child(3) {
+    border-left-color: var(--warning);
+}
+
+.kpi-card:nth-child(4) {
+    border-left-color: var(--info);
+}
+
+.kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.kpi-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.kpi-icon {
+    font-size: 24px;
+    color: var(--gray-light);
+    opacity: 0.7;
+}
+
+.kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 12px;
+    line-height: 1.2;
+}
+
+.kpi-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--gray-medium);
+}
+
+.kpi-change {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.kpi-change.positive {
+    color: var(--success);
+}
+
+.kpi-change.negative {
+    color: var(--danger);
+}
+
+.kpi-amount {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.kpi-date {
+    font-weight: 500;
+    color: var(--secondary);
+}
+
+.kpi-period {
+    color: var(--gray-medium);
+    font-size: 11px;
+}
+
+/* ========== Charts Section ========== */
+.charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 24px;
+}
+
+.chart-card {
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.chart-card.chart-full {
+    grid-column: 1 / -1;
+}
+
+.chart-header {
+    margin-bottom: 20px;
+}
+
+.chart-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 
 .chart-container {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-  width: 100%;
-  overflow-x: auto;
+    position: relative;
+    height: 300px;
+    margin-bottom: 12px;
 }
 
-/* canvas responsivo */
-.chart-container canvas {
-  width: 100% !important;
-  height: auto !important;
-  max-height: 350px;
+.chart-card.chart-full .chart-container {
+    height: 350px;
 }
 
-/* ==========================
-   MOBILE
-========================== */
+.table-container {
+    overflow-x: auto;
+}
 
+.category-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.category-table thead {
+    background: var(--gray-light);
+    border-bottom: 2px solid var(--primary);
+}
+
+.category-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.category-table th.text-right {
+    text-align: right;
+}
+
+.category-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--light);
+    color: var(--primary);
+    font-size: 14px;
+}
+
+.category-table tbody tr:hover {
+    background: var(--gray-light);
+    transition: var(--transition);
+}
+
+.category-table td.text-right {
+    text-align: right;
+}
+
+.category-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* ========== Responsive Design ========== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .kpi-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-card.chart-full {
+        grid-column: 1;
+    }
+}
+
+/* Mobile */
 @media (max-width: 768px) {
-  .container-dash {
-    padding: 8px;
-    margin: 8px auto;
-  }
+    .dashboard-container {
+        padding: 16px 12px;
+    }
 
-  h2 {
-    font-size: 1.2rem;
-    margin-bottom: 15px;
-  }
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
 
-  .card {
-    padding: 10px;
-    margin-bottom: 10px;
-  }
+    .dashboard-header h2 {
+        font-size: 24px;
+    }
 
-  .card h4 {
-    font-size: 0.9rem;
-  }
+    .kpi-section {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
 
-  .card span {
-    font-size: 18px;
-  }
+    .kpi-card {
+        padding: 18px;
+    }
+
+    .kpi-value {
+        font-size: 24px;
+    }
+
+    .charts-section {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .chart-card {
+        padding: 16px;
+    }
+
+    .chart-container {
+        height: 250px;
+    }
+
+    .chart-card.chart-full .chart-container {
+        height: 300px;
+    }
+
+    .toggle-group {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .category-table {
+        font-size: 12px;
+    }
+
+    .category-table th,
+    .category-table td {
+        padding: 10px 12px;
+    }
+}
+
+/* ========== Animations ========== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.kpi-card,
+.chart-card {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+.kpi-card:nth-child(1) { animation-delay: 0.1s; }
+.kpi-card:nth-child(2) { animation-delay: 0.2s; }
+.kpi-card:nth-child(3) { animation-delay: 0.3s; }
+.kpi-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* ========== Dark Mode (Future) ========== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --white: #1a1a1a;
+        --primary: #ecf0f1;
+        --dark: #ecf0f1;
+        --gray-light: #34495e;
+        --gray-medium: #95a5a6;
+    }
+
+    .kpi-card,
+    .chart-card {
+        background: #2c3e50;
+    }
+
+    .category-table thead {
+        background: #34495e;
+    }
+}
+
+/* ========== Utility Classes ========== */
+.text-right {
+    text-align: right;
+}
+
+.text-center {
+    text-align: center;
+}
 
   .chart-container {
     padding: 12px;

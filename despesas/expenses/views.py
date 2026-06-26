@@ -5,9 +5,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.db.models import Sum, FloatField, Q
+from django.db.models import Sum, FloatField, Q, Avg, Count
 from django.db.models.functions import Cast
 from django.utils import timezone
+from datetime import datetime, timedelta
+from calendar import monthrange
 from .forms import DespesaForm, RegisterForm, CompartilharForm
 from .models import Despesa, Categoria, Compartilhamento
 
@@ -300,37 +302,211 @@ def resumo_anual(request):
 def dashboard(request):
 
     compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
-
     tem_partilha = compartilhamento is not None
-
     ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
 
     # impedir acesso manual
     if request.GET.get("shared") == "1" and not tem_partilha:
         return redirect("dashboard")
 
-    if ver_conjunto:
+    # ========== PERÍODO ATUAL (MÊS ATUAL) ==========
+    hoje = timezone.now()
+    mes_atual = hoje.month
+    ano_atual = hoje.year
 
-        despesas = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner), tipo="saida"
+    _, ultimo_dia = monthrange(ano_atual, mes_atual)
+    data_inicio_atual = datetime(ano_atual, mes_atual, 1).date()
+    data_fim_atual = datetime(ano_atual, mes_atual, ultimo_dia).date()
+
+    if ver_conjunto:
+        despesas_atual = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner),
+            tipo="saida",
+            data__gte=data_inicio_atual,
+            data__lte=data_fim_atual,
+        )
+    else:
+        despesas_atual = Despesa.objects.filter(
+            user=request.user,
+            tipo="saida",
+            data__gte=data_inicio_atual,
+            data__lte=data_fim_atual,
         )
 
-    else:
+    # Total período atual
+    total_atual = despesas_atual.aggregate(Sum("valor"))["valor__sum"] or 0
 
-        despesas = Despesa.objects.filter(user=request.user, tipo="saida")
-
-    total = despesas.aggregate(Sum("valor"))["valor__sum"] or 0
-
-    por_categoria = despesas.values("categoria__nome").annotate(
-        total=Cast(Sum("valor"), FloatField())
+    # Por categoria - período atual
+    por_categoria = (
+        despesas_atual.values("categoria__nome")
+        .annotate(
+            total=Cast(Sum("valor"), FloatField()),
+            percentual=Cast(
+                Sum("valor") * 100.0 / float(total_atual) if total_atual > 0 else 0,
+                FloatField(),
+            ),
+        )
+        .order_by("-total")
     )
+
+    # ========== PERÍODO ANTERIOR (MÊS PASSADO) ==========
+    # Calcular mês e ano anterior
+    if mes_atual == 1:
+        mes_anterior = 12
+        ano_anterior = ano_atual - 1
+    else:
+        mes_anterior = mes_atual - 1
+        ano_anterior = ano_atual
+
+    _, ultimo_dia_anterior = monthrange(ano_anterior, mes_anterior)
+    data_inicio_anterior = datetime(ano_anterior, mes_anterior, 1).date()
+    data_fim_anterior = datetime(ano_anterior, mes_anterior, ultimo_dia_anterior).date()
+
+    if ver_conjunto:
+        despesas_anterior = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner),
+            tipo="saida",
+            data__gte=data_inicio_anterior,
+            data__lte=data_fim_anterior,
+        )
+    else:
+        despesas_anterior = Despesa.objects.filter(
+            user=request.user,
+            tipo="saida",
+            data__gte=data_inicio_anterior,
+            data__lte=data_fim_anterior,
+        )
+
+    total_anterior = despesas_anterior.aggregate(Sum("valor"))["valor__sum"] or 0
+
+    # Variação percentual
+    if total_anterior > 0:
+        variacao_percentual = (
+            (float(total_atual) - float(total_anterior)) / float(total_anterior)
+        ) * 100
+    else:
+        variacao_percentual = 0 if total_atual == 0 else 100
+
+    # ========== TOP 5 CATEGORIAS ==========
+    if ver_conjunto:
+        despesas_top = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner), tipo="saida"
+        )
+    else:
+        despesas_top = Despesa.objects.filter(user=request.user, tipo="saida")
+
+    top_categorias = (
+        despesas_top.values("categoria__nome")
+        .annotate(total=Cast(Sum("valor"), FloatField()), count=Count("id"))
+        .order_by("-total")[:5]
+    )
+
+    # ========== KPIs ==========
+    # Categoria mais cara (geral - últimas 3 meses)
+    tres_meses_atras = hoje - timedelta(days=90)
+    if ver_conjunto:
+        despesas_3m = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner),
+            tipo="saida",
+            data__gte=tres_meses_atras,
+        )
+    else:
+        despesas_3m = Despesa.objects.filter(
+            user=request.user, tipo="saida", data__gte=tres_meses_atras
+        )
+
+    categoria_mais_cara = (
+        despesas_3m.values("categoria__nome")
+        .annotate(total=Cast(Sum("valor"), FloatField()))
+        .order_by("-total")
+        .first()
+    )
+
+    # Ticket médio
+    ticket_medio = despesas_atual.aggregate(Avg("valor"))["valor__avg"] or 0
+
+    # Dia com maior gasto (período atual)
+    dia_maior_gasto = (
+        despesas_atual.values("data")
+        .annotate(total=Cast(Sum("valor"), FloatField()))
+        .order_by("-total")
+        .first()
+    )
+
+    # ========== EVOLUÇÃO MENSAL (últimos 3 meses) ==========
+    evolucao = []
+    for i in range(2, -1, -1):  # últimos 3 meses (incluindo atual)
+        if mes_atual - i < 1:
+            mes = 12 + (mes_atual - i)
+            ano = ano_atual - 1
+        else:
+            mes = mes_atual - i
+            ano = ano_atual
+
+        _, ultimo_dia_mes = monthrange(ano, mes)
+        data_inicio = datetime(ano, mes, 1).date()
+        data_fim = datetime(ano, mes, ultimo_dia_mes).date()
+
+        if ver_conjunto:
+            despesas_mes = Despesa.objects.filter(
+                Q(user=request.user) | Q(user=compartilhamento.owner),
+                tipo="saida",
+                data__gte=data_inicio,
+                data__lte=data_fim,
+            )
+        else:
+            despesas_mes = Despesa.objects.filter(
+                user=request.user,
+                tipo="saida",
+                data__gte=data_inicio,
+                data__lte=data_fim,
+            )
+
+        total_mes = despesas_mes.aggregate(Sum("valor"))["valor__sum"] or 0
+        meses = [
+            "Jan",
+            "Fev",
+            "Mar",
+            "Abr",
+            "Mai",
+            "Jun",
+            "Jul",
+            "Ago",
+            "Set",
+            "Out",
+            "Nov",
+            "Dez",
+        ]
+        evolucao.append(
+            {
+                "mes": f"{meses[mes-1]} {ano}",
+                "mes_numero": mes,
+                "ano": ano,
+                "total": float(total_mes),
+            }
+        )
 
     return render(
         request,
         "dashboard.html",
         {
-            "total": total,
+            # Período atual
+            "total": total_atual,
             "por_categoria": por_categoria,
+            "ticket_medio": float(ticket_medio),
+            # Período anterior e comparativa
+            "total_anterior": total_anterior,
+            "variacao_percentual": round(variacao_percentual, 2),
+            "mes_anterior": mes_anterior,
+            "ano_anterior": ano_anterior,
+            # Top categorias
+            "top_categorias": top_categorias,
+            # KPIs
+            "categoria_mais_cara": categoria_mais_cara,
+            "dia_maior_gasto": dia_maior_gasto,
+            # Evolução
+            "evolucao": evolucao,
+            # Compartilhamento
             "tem_partilha": tem_partilha,
             "ver_conjunto": ver_conjunto,
         },
