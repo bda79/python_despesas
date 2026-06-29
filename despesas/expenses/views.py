@@ -341,6 +341,7 @@ def dashboard(request):
         despesas_atual.values("categoria__nome")
         .annotate(
             total=Cast(Sum("valor"), FloatField()),
+            numero_despesas=Count("id"),
             percentual=Cast(
                 Sum("valor") * 100.0 / float(total_atual) if total_atual > 0 else 0,
                 FloatField(),
@@ -485,6 +486,16 @@ def dashboard(request):
                 "total": float(total_mes),
             }
         )
+
+    # ========== DASHBOARD ==========
+    if ver_conjunto:
+        despesas = Despesa.objects.filter(
+            Q(user=request.user) | Q(user=compartilhamento.owner)
+        )
+    else:
+        despesas = Despesa.objects.filter(user=request.user)
+
+    total_atual = despesas.aggregate(Sum("valor"))["valor__sum"] or 0
 
     return render(
         request,

@@ -155,7 +155,7 @@
                                         <strong>{{ categoria.total|floatformat:2|localize }} €</strong>
                                     </td>
                                     <td class="text-right">{{ categoria.percentual|floatformat:1 }}%</td>
-                                    <td class="text-right">-</td>
+                                    <td class="text-right">{{ categoria.numero_despesas }}</td>
                                 </tr>
                             {% empty %}
                                 <tr>
@@ -173,9 +173,15 @@
     // Utility: Format numbers
     const formatNumber = (val) => {
         if (val) {
-            const nJs = parseFloat(val.toString().replace(/\./g, '').replace(',', '.'));
-            return nJs.toFixed(2);
+            const nJs = parseFloat(
+                val.toString()
+                .replace(/\./g, '')   // Remove separador de milhares
+                .replace(',', '.')    // Converte decimal para ponto
+            );
+
+            return Number(nJs.toFixed(2));
         }
+
         return 0;
     };
 
@@ -258,10 +264,10 @@
 
     const dataBr = [
         {% for c in top_categorias %}
-            {{ c.total }},
+            formatNumber("{{ c.total }}"),
         {% endfor %}
     ];
-
+    
     new Chart(document.getElementById('grafico-bar'), {
         type: 'bar',
         data: {
@@ -336,7 +342,7 @@
 
     const dataL = [
         {% for e in evolucao %}
-            {{ e.total }},
+            formatNumber("{{ e.total }}"),
         {% endfor %}
     ];
 
