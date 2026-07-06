@@ -23,24 +23,42 @@
                     </div>
                 {% endif %}
             </div>
+            <div class="month-navigation">
+                <a href="?mes={{ mes_anterior_nav }}&ano={{ ano_anterior_nav|unlocalize }}{% if ver_conjunto %}&shared=1{% endif %}"
+                   class="month-link">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                <span class="current-month">{{ nome_mes }} {{ ano_atual|unlocalize }}</span>
+                <a href="?mes={{ mes_seguinte_nav }}&ano={{ ano_seguinte_nav|unlocalize }}{% if ver_conjunto %}&shared=1{% endif %}"
+                   class="month-link">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </div>
         </div>
         <!-- KPI Cards Section -->
         <div class="kpi-section">
             <!-- Card 1: Total Gasto -->
             <div class="kpi-card">
                 <div class="kpi-header">
-                    <span class="kpi-label">Total Gasto</span>
+                    <span class="kpi-label">Total Gasto do Mês</span>
                     <i class="fas fa-wallet kpi-icon"></i>
                 </div>
-                <div class="kpi-value">{{ total|floatformat:2|localize }} €</div>
+                <div class="kpi-value">{{ total_gasto_mes|floatformat:2|localize }} €</div>
                 <div class="kpi-footer">
-                    {% if variacao_percentual >= 0 %}
+                    {% if variacao_percentual > 0 %}
                         <span class="kpi-change positive">
-                            <i class="fas fa-arrow-up"></i> {{ variacao_percentual|floatformat:1 }}%
+                            <i class="fas fa-arrow-up"></i>
+                            {{ variacao_percentual|floatformat:1 }}%
+                        </span>
+                    {% elif variacao_percentual < 0 %}
+                        <span class="kpi-change negative">
+                            <i class="fas fa-arrow-down"></i>
+                            {{ variacao_percentual|floatformat:1|cut:"-" }}%
                         </span>
                     {% else %}
-                        <span class="kpi-change negative">
-                            <i class="fas fa-arrow-down"></i> {{ variacao_percentual|floatformat:1 }}%
+                        <span class="kpi-change neutral">
+                            <i class="fas fa-minus"></i>
+                            0%
                         </span>
                     {% endif %}
                     <span class="kpi-period">vs mês anterior</span>

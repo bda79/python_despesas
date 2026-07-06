@@ -1,3 +1,5 @@
+from decimal import Decimal, InvalidOperation
+
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
@@ -5,6 +7,35 @@ from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from .models import Despesa, Categoria
+
+
+class DecimalPTField(forms.DecimalField):
+    def to_python(self, value):
+        if value in self.empty_values:
+            return None
+
+        if isinstance(value, Decimal):
+            return value
+
+        texto = str(value).strip().replace(" ", "")
+        if not texto:
+            return None
+
+        for simbolo in ["€", "$", "R$", "£"]:
+            texto = texto.replace(simbolo, "")
+
+        if "," in texto and "." in texto:
+            if texto.rfind(",") > texto.rfind("."):
+                texto = texto.replace(".", "").replace(",", ".")
+            else:
+                texto = texto.replace(",", "")
+        elif "," in texto:
+            texto = texto.replace(",", ".")
+
+        try:
+            return Decimal(texto)
+        except InvalidOperation:
+            raise ValidationError(self.error_messages["invalid"], code="invalid")
 
 
 class DespesaForm(forms.ModelForm):
@@ -22,12 +53,27 @@ class DespesaForm(forms.ModelForm):
         error_messages={"required": "A categoria é obrigatória"},
     )
 
+    valor = DecimalPTField(
+        required=True,
+        label="Valor",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "inputmode": "decimal",
+                "placeholder": "Digite o valor do movimento",
+            }
+        ),
+        error_messages={
+            "required": "O valor é obrigatório",
+            "invalid": "Introduza um valor válido",
+        },
+    )
+
     class Meta:
         model = Despesa
         fields = ["tipo", "categoria", "valor", "data", "descricao"]
         widgets = {
             "tipo": forms.Select(attrs={"class": "form-control"}),
-            "valor": forms.NumberInput(attrs={"class": "form-control"}),
             "data": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
             "descricao": forms.Textarea(attrs={"class": "form-control"}),
         }

@@ -50,6 +50,7 @@ urlpatterns = [
     path("resumo-anual/", views.resumo_anual, name="resumo_anual"),
     path("dashboard/", views.dashboard, name="dashboard"),
     path("configuracoes/", views.configuracoes, name="configuracoes"),
+    path("categorias/", views.gestao_categorias, name="gestao_categorias"),
     path("api/despesas/", views.api_despesas, name="api_despesas"),
     # SESSION
     path("keep_alive/", views.keep_alive, name="keep_alive"),

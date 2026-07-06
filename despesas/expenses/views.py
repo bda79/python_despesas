@@ -1,17 +1,42 @@
+from urllib.parse import quote
+
 from django.http import JsonResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.db.models import Sum, FloatField, Q, Avg, Count
-from django.db.models.functions import Cast
+from django.db.models import Q
+from django.urls import reverse
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime
 from calendar import monthrange
 from .forms import DespesaForm, RegisterForm, CompartilharForm
 from .models import Despesa, Categoria, Compartilhamento
+from .services.operacoes import (
+    atualizar_despesa,
+    invalidar_cache_dashboard,
+    obter_contexto_dashboard_view,
+    obter_parametros_mes_ano,
+    redirecionar_se_partilha_invalida,
+    registar_despesa,
+    remover_despesa,
+)
+from .services.partilha import obter_despesas, obter_estado_partilha
+from .services.resumo import calcular_totais, obter_resumo_anual, obter_resumo_mensal
+
+
+def periodo_mes(ano, mes):
+    data_inicio = datetime(ano, mes, 1).date()
+    _, ultimo_dia = monthrange(ano, mes)
+    data_fim = datetime(ano, mes, ultimo_dia).date()
+    return data_inicio, data_fim
+
+
+def redirect_with_message(request, message, destination):
+    messages.success(request, message)
+    return redirect(destination)
 
 
 def login_view(request):
@@ -21,13 +46,9 @@ def login_view(request):
     if request.method == "POST":
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                login(request, user)
-                next_url = request.GET.get("next", "lista")
-                return redirect(next_url)
+            login(request, form.get_user())
+            next_url = request.GET.get("next", "lista")
+            return redirect(next_url)
     else:
         form = AuthenticationForm()
 
@@ -55,9 +76,7 @@ def register_view(request):
 
             login(request, user)
 
-            messages.success(request, "Conta criada com sucesso.")
-
-            return redirect("lista")
+            return redirect_with_message(request, "Conta criada com sucesso.", "lista")
 
         else:
 
@@ -72,36 +91,13 @@ def register_view(request):
 
 @login_required
 def lista_despesas(request):
+    despesas, tem_partilha, ver_conjunto = obter_despesas(request)
 
-    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
+    redirecao = redirecionar_se_partilha_invalida(request, "lista", tem_partilha)
+    if redirecao is not None:
+        return redirecao
 
-    tem_partilha = compartilhamento is not None
-
-    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
-
-    # impedir acesso manual
-    if request.GET.get("shared") == "1" and not tem_partilha:
-        return redirect("lista")
-
-    if ver_conjunto:
-
-        despesas = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner)
-        )
-
-    else:
-
-        despesas = Despesa.objects.filter(user=request.user)
-
-    total_entradas = (
-        despesas.filter(tipo="entrada").aggregate(Sum("valor"))["valor__sum"] or 0
-    )
-
-    total_saidas = (
-        despesas.filter(tipo="saida").aggregate(Sum("valor"))["valor__sum"] or 0
-    )
-
-    saldo = total_entradas - total_saidas
+    total_entradas, total_saidas, saldo = calcular_totais(despesas)
 
     return render(
         request,
@@ -122,12 +118,8 @@ def nova_despesa(request):
     form = DespesaForm(request.POST or None)
     categorias = Categoria.objects.order_by("nome")
 
-    if form.is_valid():
-        despesa = form.save(commit=False)
-        despesa.user = request.user
-        despesa.save()
-        messages.success(request, "Despesa registada com sucesso.")
-        return redirect("lista")
+    if registar_despesa(request, form):
+        return redirect_with_message(request, "Despesa registada com sucesso.", "lista")
 
     elif request.method == "POST":
         messages.error(request, "Por favor corrija os erros no formulário.")
@@ -145,10 +137,10 @@ def editar_despesa(request, id):
     form = DespesaForm(request.POST or None, instance=despesa)
     categorias = Categoria.objects.order_by("nome")
 
-    if form.is_valid():
-        form.save()
-        messages.success(request, "Despesa atualizada com sucesso.")
-        return redirect("lista")
+    if atualizar_despesa(request, form):
+        return redirect_with_message(
+            request, "Despesa atualizada com sucesso.", "lista"
+        )
 
     elif request.method == "POST":
         messages.error(request, "Por favor corrija os erros no formulário.")
@@ -165,64 +157,27 @@ def apagar_despesa(request, id):
     despesa = get_object_or_404(Despesa, id=id, user=request.user)
 
     if request.method == "POST":
-        despesa.delete()
-        messages.success(request, "Despesa apagada com sucesso.")
-        return redirect("lista")
+        remover_despesa(request, despesa)
+        return redirect_with_message(request, "Despesa apagada com sucesso.", "lista")
 
     return render(request, "confirmar_apagar.html", {"despesa": despesa})
 
 
 @login_required
 def resumo_mensal(request):
-
     hoje = timezone.now()
+    mes, ano = obter_parametros_mes_ano(request, hoje)
 
-    mes = request.GET.get("mes")
-    ano = request.GET.get("ano")
+    _, tem_partilha, ver_conjunto = obter_estado_partilha(request)
 
-    try:
-        mes = int(str(mes).replace(".", "")) if mes else hoje.month
-    except ValueError:
-        mes = hoje.month
-
-    try:
-        ano = int(str(ano).replace(".", "")) if ano else hoje.year
-    except ValueError:
-        ano = hoje.year
-
-    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
-
-    tem_partilha = compartilhamento is not None
-
-    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
-
-    # impedir acesso manual
-    if request.GET.get("shared") == "1" and not tem_partilha:
-        return redirect("resumo_mensal")
-
-    if ver_conjunto:
-
-        movimentos = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner),
-            data__month=mes,
-            data__year=ano,
-        )
-
-    else:
-
-        movimentos = Despesa.objects.filter(
-            user=request.user,
-            data__month=mes,
-            data__year=ano,
-        )
-
-    entradas = (
-        movimentos.filter(tipo="entrada").aggregate(Sum("valor"))["valor__sum"] or 0
+    redirecao = redirecionar_se_partilha_invalida(
+        request, "resumo_mensal", tem_partilha
     )
+    if redirecao is not None:
+        return redirecao
 
-    saidas = movimentos.filter(tipo="saida").aggregate(Sum("valor"))["valor__sum"] or 0
-
-    saldo = entradas - saidas
+    despesas_base, _, _ = obter_despesas(request)
+    movimentos, entradas, saidas, saldo = obter_resumo_mensal(despesas_base, mes, ano)
 
     return render(
         request,
@@ -242,46 +197,17 @@ def resumo_mensal(request):
 
 @login_required
 def resumo_anual(request):
-
     hoje = timezone.now()
+    _, ano = obter_parametros_mes_ano(request, hoje)
 
-    ano = request.GET.get("ano")
+    _, tem_partilha, ver_conjunto = obter_estado_partilha(request)
 
-    try:
-        ano = int(str(ano).replace(".", "")) if ano else hoje.year
-    except ValueError:
-        ano = hoje.year
+    redirecao = redirecionar_se_partilha_invalida(request, "resumo_anual", tem_partilha)
+    if redirecao is not None:
+        return redirecao
 
-    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
-
-    tem_partilha = compartilhamento is not None
-
-    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
-
-    if request.GET.get("shared") == "1" and not tem_partilha:
-        return redirect("resumo_anual")
-
-    if ver_conjunto:
-
-        movimentos = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner),
-            data__year=ano,
-        ).order_by("-data")
-
-    else:
-
-        movimentos = Despesa.objects.filter(
-            user=request.user,
-            data__year=ano,
-        ).order_by("-data")
-
-    entradas = (
-        movimentos.filter(tipo="entrada").aggregate(total=Sum("valor"))["total"] or 0
-    )
-
-    saidas = movimentos.filter(tipo="saida").aggregate(total=Sum("valor"))["total"] or 0
-
-    saldo = entradas - saidas
+    despesas_base, _, _ = obter_despesas(request)
+    movimentos, entradas, saidas, saldo = obter_resumo_anual(despesas_base, ano)
 
     return render(
         request,
@@ -300,227 +226,74 @@ def resumo_anual(request):
 
 @login_required
 def dashboard(request):
+    _, tem_partilha, ver_conjunto = obter_estado_partilha(request)
 
-    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
-    tem_partilha = compartilhamento is not None
-    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
+    redirecao = redirecionar_se_partilha_invalida(request, "dashboard", tem_partilha)
+    if redirecao is not None:
+        return redirecao
 
-    # impedir acesso manual
-    if request.GET.get("shared") == "1" and not tem_partilha:
-        return redirect("dashboard")
+    mes, ano = obter_parametros_mes_ano(request, timezone.now())
 
-    # ========== PERÍODO ATUAL (MÊS ATUAL) ==========
-    hoje = timezone.now()
-    mes_atual = hoje.month
-    ano_atual = hoje.year
-
-    _, ultimo_dia = monthrange(ano_atual, mes_atual)
-    data_inicio_atual = datetime(ano_atual, mes_atual, 1).date()
-    data_fim_atual = datetime(ano_atual, mes_atual, ultimo_dia).date()
-
-    if ver_conjunto:
-        despesas_atual = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner),
-            tipo="saida",
-            data__gte=data_inicio_atual,
-            data__lte=data_fim_atual,
-        )
-    else:
-        despesas_atual = Despesa.objects.filter(
-            user=request.user,
-            tipo="saida",
-            data__gte=data_inicio_atual,
-            data__lte=data_fim_atual,
-        )
-
-    # Total período atual
-    total_atual = despesas_atual.aggregate(Sum("valor"))["valor__sum"] or 0
-
-    # Por categoria - período atual
-    por_categoria = (
-        despesas_atual.values("categoria__nome")
-        .annotate(
-            total=Cast(Sum("valor"), FloatField()),
-            numero_despesas=Count("id"),
-            percentual=Cast(
-                Sum("valor") * 100.0 / float(total_atual) if total_atual > 0 else 0,
-                FloatField(),
-            ),
-        )
-        .order_by("-total")
+    despesas_base, _, _ = obter_despesas(request)
+    contexto_dashboard = obter_contexto_dashboard_view(
+        request,
+        tem_partilha,
+        ver_conjunto,
+        despesas_base,
+        mes,
+        ano,
     )
 
-    # ========== PERÍODO ANTERIOR (MÊS PASSADO) ==========
-    # Calcular mês e ano anterior
-    if mes_atual == 1:
-        mes_anterior = 12
-        ano_anterior = ano_atual - 1
-    else:
-        mes_anterior = mes_atual - 1
-        ano_anterior = ano_atual
+    return render(request, "dashboard.html", contexto_dashboard)
 
-    _, ultimo_dia_anterior = monthrange(ano_anterior, mes_anterior)
-    data_inicio_anterior = datetime(ano_anterior, mes_anterior, 1).date()
-    data_fim_anterior = datetime(ano_anterior, mes_anterior, ultimo_dia_anterior).date()
 
-    if ver_conjunto:
-        despesas_anterior = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner),
-            tipo="saida",
-            data__gte=data_inicio_anterior,
-            data__lte=data_fim_anterior,
-        )
-    else:
-        despesas_anterior = Despesa.objects.filter(
-            user=request.user,
-            tipo="saida",
-            data__gte=data_inicio_anterior,
-            data__lte=data_fim_anterior,
-        )
+@login_required
+def gestao_categorias(request):
+    query = request.GET.get("q", "").strip()
+    categorias = Categoria.objects.order_by("nome")
 
-    total_anterior = despesas_anterior.aggregate(Sum("valor"))["valor__sum"] or 0
+    if query:
+        categorias = categorias.filter(nome__icontains=query)
 
-    # Variação percentual
-    if total_anterior > 0:
-        variacao_percentual = (
-            (float(total_atual) - float(total_anterior)) / float(total_anterior)
-        ) * 100
-    else:
-        variacao_percentual = 0 if total_atual == 0 else 100
+    if request.method == "POST":
+        if "delete_categoria" in request.POST:
+            categoria_id = request.POST.get("delete_categoria")
+            categoria = get_object_or_404(Categoria, pk=categoria_id)
 
-    # ========== TOP 5 CATEGORIAS ==========
-    if ver_conjunto:
-        despesas_top = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner), tipo="saida"
-        )
-    else:
-        despesas_top = Despesa.objects.filter(user=request.user, tipo="saida")
+            if Despesa.objects.filter(categoria=categoria).exists():
+                messages.error(
+                    request,
+                    "Esta categoria não pode ser removida porque tem despesas associadas.",
+                )
+            else:
+                categoria.delete()
+                messages.success(request, "Categoria removida com sucesso.")
 
-    top_categorias = (
-        despesas_top.values("categoria__nome")
-        .annotate(total=Cast(Sum("valor"), FloatField()), count=Count("id"))
-        .order_by("-total")[:5]
-    )
+            redirect_url = reverse("gestao_categorias")
+            if query:
+                redirect_url = f"{redirect_url}?q={quote(query)}"
+            return redirect(redirect_url)
 
-    # ========== KPIs ==========
-    # Categoria mais cara (geral - últimas 3 meses)
-    tres_meses_atras = hoje - timedelta(days=90)
-    if ver_conjunto:
-        despesas_3m = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner),
-            tipo="saida",
-            data__gte=tres_meses_atras,
-        )
-    else:
-        despesas_3m = Despesa.objects.filter(
-            user=request.user, tipo="saida", data__gte=tres_meses_atras
-        )
+        categoria_id = request.POST.get("categoria_id")
+        nome = request.POST.get("nome", "").strip()
 
-    categoria_mais_cara = (
-        despesas_3m.values("categoria__nome")
-        .annotate(total=Cast(Sum("valor"), FloatField()))
-        .order_by("-total")
-        .first()
-    )
+        if categoria_id and nome:
+            categoria = get_object_or_404(Categoria, pk=categoria_id)
+            categoria.nome = nome
+            categoria.save()
+            messages.success(request, "Categoria atualizada com sucesso.")
 
-    # Ticket médio
-    ticket_medio = despesas_atual.aggregate(Avg("valor"))["valor__avg"] or 0
+            redirect_url = reverse("gestao_categorias")
+            if query:
+                redirect_url = f"{redirect_url}?q={quote(query)}"
+            return redirect(redirect_url)
 
-    # Dia com maior gasto (período atual)
-    dia_maior_gasto = (
-        despesas_atual.values("data")
-        .annotate(total=Cast(Sum("valor"), FloatField()))
-        .order_by("-total")
-        .first()
-    )
-
-    # ========== EVOLUÇÃO MENSAL (últimos 3 meses) ==========
-    evolucao = []
-    for i in range(2, -1, -1):  # últimos 3 meses (incluindo atual)
-        if mes_atual - i < 1:
-            mes = 12 + (mes_atual - i)
-            ano = ano_atual - 1
-        else:
-            mes = mes_atual - i
-            ano = ano_atual
-
-        _, ultimo_dia_mes = monthrange(ano, mes)
-        data_inicio = datetime(ano, mes, 1).date()
-        data_fim = datetime(ano, mes, ultimo_dia_mes).date()
-
-        if ver_conjunto:
-            despesas_mes = Despesa.objects.filter(
-                Q(user=request.user) | Q(user=compartilhamento.owner),
-                tipo="saida",
-                data__gte=data_inicio,
-                data__lte=data_fim,
-            )
-        else:
-            despesas_mes = Despesa.objects.filter(
-                user=request.user,
-                tipo="saida",
-                data__gte=data_inicio,
-                data__lte=data_fim,
-            )
-
-        total_mes = despesas_mes.aggregate(Sum("valor"))["valor__sum"] or 0
-        meses = [
-            "Jan",
-            "Fev",
-            "Mar",
-            "Abr",
-            "Mai",
-            "Jun",
-            "Jul",
-            "Ago",
-            "Set",
-            "Out",
-            "Nov",
-            "Dez",
-        ]
-        evolucao.append(
-            {
-                "mes": f"{meses[mes-1]} {ano}",
-                "mes_numero": mes,
-                "ano": ano,
-                "total": float(total_mes),
-            }
-        )
-
-    # ========== DASHBOARD ==========
-    if ver_conjunto:
-        despesas = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner)
-        )
-    else:
-        despesas = Despesa.objects.filter(user=request.user)
-
-    total_atual = despesas.aggregate(Sum("valor"))["valor__sum"] or 0
+        messages.error(request, "O nome da categoria é obrigatório.")
 
     return render(
         request,
-        "dashboard.html",
-        {
-            # Período atual
-            "total": total_atual,
-            "por_categoria": por_categoria,
-            "ticket_medio": float(ticket_medio),
-            # Período anterior e comparativa
-            "total_anterior": total_anterior,
-            "variacao_percentual": round(variacao_percentual, 2),
-            "mes_anterior": mes_anterior,
-            "ano_anterior": ano_anterior,
-            # Top categorias
-            "top_categorias": top_categorias,
-            # KPIs
-            "categoria_mais_cara": categoria_mais_cara,
-            "dia_maior_gasto": dia_maior_gasto,
-            # Evolução
-            "evolucao": evolucao,
-            # Compartilhamento
-            "tem_partilha": tem_partilha,
-            "ver_conjunto": ver_conjunto,
-        },
+        "gestao_categorias.html",
+        {"categorias": categorias, "query": query},
     )
 
 
@@ -535,6 +308,7 @@ def configuracoes(request):
     if request.method == "POST" and "remove_partilha" in request.POST:
 
         Compartilhamento.objects.filter(owner=request.user).delete()
+        invalidar_cache_dashboard(request.user)
 
         messages.success(request, "Partilha removida.")
 
@@ -571,6 +345,7 @@ def configuracoes(request):
                     owner=request.user,
                     shared_user=user,
                 )
+                invalidar_cache_dashboard(request.user)
 
                 messages.success(request, "Partilha criada com sucesso.")
 
@@ -597,16 +372,8 @@ def api_despesas(request):
     query = request.GET.get("q", "").strip()
     categoria = request.GET.get("categoria", "").strip()
 
-    compartilhamento = Compartilhamento.objects.filter(shared_user=request.user).first()
-    tem_partilha = compartilhamento is not None
-    ver_conjunto = request.GET.get("shared") == "1" and tem_partilha
-
-    if ver_conjunto:
-        qs = Despesa.objects.filter(
-            Q(user=request.user) | Q(user=compartilhamento.owner)
-        )
-    else:
-        qs = Despesa.objects.filter(user=request.user)
+    _, tem_partilha, ver_conjunto = obter_estado_partilha(request)
+    qs, _, _ = obter_despesas(request)
 
     if query:
         qs = qs.filter(
@@ -616,7 +383,18 @@ def api_despesas(request):
     if categoria:
         qs = qs.filter(categoria__nome__icontains=categoria)
 
-    qs = qs.order_by("-data")[:200]
+    qs = (
+        qs.select_related("categoria", "user")
+        .only(
+            "descricao",
+            "valor",
+            "tipo",
+            "data",
+            "categoria__nome",
+            "user__username",
+        )
+        .order_by("-data")[:200]
+    )
 
     data = list(
         qs.values(

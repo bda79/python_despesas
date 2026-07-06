@@ -46,6 +46,11 @@
                                 Remover Partilha
                             </button>
                         </form>
+                        <a href="{% url 'gestao_categorias' %}"
+                           class="btn btn-outline-primary mt-3">
+                            <i class="fas fa-tags"></i>
+                            Gerir Categorias
+                        </a>
                     {% else %}
                         <form method="post">
                             {% csrf_token %}
@@ -59,6 +64,11 @@
                                 Partilhar
                             </button>
                         </form>
+                        <a href="{% url 'gestao_categorias' %}"
+                           class="btn btn-outline-primary mt-3">
+                            <i class="fas fa-tags"></i>
+                            Gerir Categorias
+                        </a>
                     {% endif %}
                 </div>
             </div>

@@ -4,6 +4,17 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class DespesaQuerySet(models.QuerySet):
+    def saidas(self):
+        return self.filter(tipo=Despesa.SAIDA)
+
+    def entradas(self):
+        return self.filter(tipo=Despesa.ENTRADA)
+
+    def do_utilizador(self, user):
+        return self.filter(user=user)
+
+
 class Categoria(models.Model):
     nome = models.CharField(max_length=100, verbose_name="Nome")
 
@@ -17,7 +28,12 @@ class Categoria(models.Model):
 
 
 class Despesa(models.Model):
-    TIPO_COICES = [("saida", "Saída"), ("entrada", "Entrada")]
+    ENTRADA = "entrada"
+    SAIDA = "saida"
+
+    TIPO_COICES = [(SAIDA, "Saída"), (ENTRADA, "Entrada")]
+
+    objects = DespesaQuerySet.as_manager()
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuário")
 
@@ -37,6 +53,13 @@ class Despesa(models.Model):
         verbose_name = "Movimento"
         verbose_name_plural = "Movimentos"
         ordering = ["-data"]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["data"]),
+            models.Index(fields=["tipo"]),
+            models.Index(fields=["categoria"]),
+            models.Index(fields=["user", "data"]),
+        ]
 
     def __str__(self):
         return f"{self.valor}€ - {self.categoria}"
