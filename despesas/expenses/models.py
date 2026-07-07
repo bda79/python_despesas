@@ -43,6 +43,8 @@ class Despesa(models.Model):
         Categoria,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
+        related_name="despesas",
         verbose_name="Categoria",
     )
     valor = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor")

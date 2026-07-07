@@ -17,16 +17,27 @@
                         </h1>
                         <p>Edite o nome das categorias ou remova apenas as que ainda não têm despesas associadas.</p>
                     </div>
-                    <a href="{% url 'configuracoes' %}" class="btn btn-outline-secondary">
-                        <i class="fas fa-times"></i> Fechar
-                    </a>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-success">
+                            <i class="fas fa-plus"></i>
+                            Nova Categoria
+                        </button>
+                        <a href="{% url 'configuracoes' %}" class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-times"></i>
+                            Fechar
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="settings-card">
-                <div class="settings-card-header">
-                    <h2>
-                        <i class="fas fa-list"></i> Categorias
+                <div class="settings-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h2 class="mb-0">
+                        <i class="fas fa-tags"></i>
+                        Categorias
                     </h2>
+                    <span class="badge rounded-pill bg-primary fs-6">
+                        {{ categorias|length }} categoria{{ categorias|length|pluralize }}
+                    </span>
                 </div>
                 <div class="settings-card-body">
                     {% if messages %}
@@ -34,16 +45,17 @@
                             <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %}">{{ message }}</div>
                         {% endfor %}
                     {% endif %}
-                    <form method="get" class="row g-2 mb-3">
-                        <div class="col-md-8">
+                    <form method="get" class="mb-4">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
                             <input type="text"
                                    name="q"
                                    value="{{ query }}"
                                    class="form-control"
                                    placeholder="Pesquisar categoria...">
-                        </div>
-                        <div class="col-md-4 d-flex gap-2">
-                            <button type="submit" class="btn btn-primary flex-grow-1">Pesquisar</button>
+                            <button class="btn btn-primary">Pesquisar</button>
                             {% if query %}
                                 <a href="{% url 'gestao_categorias' %}"
                                    class="btn btn-outline-secondary">Limpar</a>
@@ -51,31 +63,155 @@
                         </div>
                     </form>
                     {% if categorias %}
-                        <div class="list-group">
-                            {% for categoria in categorias %}
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    <form method="post" class="d-flex flex-grow-1 align-items-center gap-2">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="categoria_id" value="{{ categoria.id }}">
-                                        <input type="text"
-                                               name="nome"
-                                               value="{{ categoria.nome }}"
-                                               class="form-control">
-                                        <button type="submit" class="btn btn-primary">Guardar</button>
-                                    </form>
-                                    <form method="post" class="ms-2">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="delete_categoria" value="{{ categoria.id }}">
-                                        <button type="submit" class="btn btn-danger">Remover</button>
-                                    </form>
-                                </div>
-                            {% endfor %}
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle category-table">
+                                <thead>
+                                    <tr>
+                                        <th>Categoria</th>
+                                        <th width="140" class="text-center">Despesas</th>
+                                        <th width="170" class="text-end">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for categoria in categorias %}
+                                        <tr class="category-row">
+                                            <td data-label="Categoria">
+                                                <div class="category-info">
+                                                    <div class="category-icon">
+                                                        <i class="fas fa-tag"></i>
+                                                    </div>
+                                                    <span class="fw-semibold">{{ categoria.nome }}</span>
+                                                </div>
+                                            </td>
+                                            <td data-label="Despesas" class="text-center">
+                                                {% if categoria.total_despesas %}
+                                                    <span class="badge bg-primary">{{ categoria.total_despesas }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-success">0</span>
+                                                {% endif %}
+                                            </td>
+                                            <td data-label="Ações" class="text-end">
+                                                <div class="category-actions">
+                                                    <button type="button"
+                                                            class="btn btn-primary btn-edit"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#editCategoriaModal"
+                                                            data-id="{{ categoria.id }}"
+                                                            data-nome="{{ categoria.nome }}"
+                                                            title="Editar">
+                                                        <i class="fas fa-pen"></i>
+                                                    </button>
+                                                    <button type="button"
+                                                            class="btn btn-danger btn-delete"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#deleteCategoriaModal"
+                                                            data-id="{{ categoria.id }}"
+                                                            data-nome="{{ categoria.nome }}"
+                                                            {% if categoria.total_despesas %}disabled{% endif %}
+                                                            title="Remover">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     {% else %}
-                        <p>Não existem categorias.</p>
+                        <div class="text-center py-5">
+                            <i class="fas fa-folder-open fa-4x text-secondary mb-3"></i>
+                            <h5 class="text-secondary">Não foram encontradas categorias.</h5>
+                            <p class="text-muted mb-0">Experimente alterar a pesquisa.</p>
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
+    <div class="modal fade" id="deleteCategoriaModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="delete_categoria" id="deleteCategoriaId">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-trash text-danger"></i>
+                            Remover Categoria
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            Tem a certeza que pretende remover a categoria
+                            <strong id="deleteCategoriaNome"></strong>?
+                        </p>
+                        <p class="text-muted mb-0">Esta ação não pode ser desfeita.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i>
+                            Remover
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editCategoriaModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="categoria_id" id="editCategoriaId">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-pen text-primary"></i>
+                            Editar Categoria
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label class="form-label">Nome da categoria</label>
+                        <input type="text"
+                               id="editCategoriaNome"
+                               name="nome"
+                               class="form-control"
+                               required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function(){
+            const modal = document.getElementById("deleteCategoriaModal");
+            modal.addEventListener("show.bs.modal", function(event){
+                const button = event.relatedTarget;
+                document.getElementById("deleteCategoriaId").value =
+                    button.dataset.id;
+                document.getElementById("deleteCategoriaNome").textContent =
+                    button.dataset.nome;
+            });
+
+            const editModal = document.getElementById("editCategoriaModal");
+            editModal.addEventListener("show.bs.modal", function(event){
+                const button = event.relatedTarget;
+                document.getElementById("editCategoriaId").value =
+                    button.dataset.id;
+                document.getElementById("editCategoriaNome").value =
+                    button.dataset.nome;
+            });
+        });
+
+    </script>
 {% endblock content %}

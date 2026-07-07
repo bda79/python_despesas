@@ -7,7 +7,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.urls import reverse
 from django.utils import timezone
 from datetime import datetime
@@ -250,7 +250,9 @@ def dashboard(request):
 @login_required
 def gestao_categorias(request):
     query = request.GET.get("q", "").strip()
-    categorias = Categoria.objects.order_by("nome")
+    categorias = Categoria.objects.annotate(total_despesas=Count("despesas")).order_by(
+        "nome"
+    )
 
     if query:
         categorias = categorias.filter(nome__icontains=query)
