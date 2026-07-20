@@ -38,9 +38,9 @@ def registar_despesa(request, form):
         despesa.user = request.user
         despesa.save()
         invalidar_cache_dashboard(request.user)
-        return despesa, True
+        return True
 
-    return None, False
+    return False
 
 
 def atualizar_despesa(request, form):
